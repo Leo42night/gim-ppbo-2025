@@ -1,0 +1,148 @@
+<div id="gameContainer"></div>
+
+<div id="info">
+  <div>Klik di map untuk bergerak</div>
+</div>
+
+<!-- Top-right login button -->
+<div class="top-right">
+  <button id="googleLoginBtn" class="login-btn">
+    <img id="loginIcon" src="https://developers.google.com/identity/images/g-logo.png" alt="Google Login" />
+  </button>
+
+  <!-- Dropdown user -->
+  <div class="user-menu" id="userMenu">
+    <div class="user-name" id="userName"></div>
+    <div class="user-email" id="userEmail"></div>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </div>
+</div>
+
+<div id="tilePopup" class="popup hidden">
+  <div class="popup-card">
+    <button class="popup-close" id="popupCloseBtn">✕</button>
+
+    <!-- Presentation - Top -->
+    <div id="mode-top" class="small hidden">
+      <div class="popup-image">
+        <img id="popupImg" src="" alt="Popup Image" />
+      </div>
+      <h2 id="popupTitle">Title</h2>
+      <p id="popupDesc">Description</p>
+    </div>
+
+    <!-- Presentation - Com -->
+    <div id="mode-com" class="big space-y hidden">
+      <div class="popup-video">
+        <div>
+          <h2 class="popup-title">Pitch Deck</h2>
+          <iframe id="vid-pitch-deck" class="" src="https://www.youtube.com/embed/TuHMaFgQXsQ" title="Presentasi"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+        <div>
+          <h2 class="popup-title">Demo</h2>
+          <iframe id="vid-demo" src="https://www.youtube.com/embed/TuHMaFgQXsQ" title="Demo" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="link">
+        <div class="link">
+          <a id="webLink" href="#" target="_blank" rel="noopener noreferrer">
+            🌐 Open Website
+          </a>
+        </div>
+
+        <div class="link">
+          <a id="githubLink" href="#" target="_blank" rel="noopener noreferrer">
+            <img src="<?= BASE_URL ?>/img/github.svg" alt="GitHub" width="24" height="24" />
+            Open GitHub
+          </a>
+        </div>
+      </div>
+
+      <!-- rate -->
+      <div class="">
+        <div>
+          Silakan <a href="" class="">Login</a> untuk memberi rating. Email
+          yang diterima hanya akun Sisfo UNTAN
+          (H1101xx10xx@student.untan.ac.id)
+        </div>
+        <div class="rating-row hidden">
+          <div class="stars" id="stars" aria-label="Rating" role="radiogroup">
+            <button type="button" class="star" data-value="1" aria-label="1 star">
+              ★
+            </button>
+            <button type="button" class="star" data-value="2" aria-label="2 stars">
+              ★
+            </button>
+            <button type="button" class="star" data-value="3" aria-label="3 stars">
+              ★
+            </button>
+            <button type="button" class="star" data-value="4" aria-label="4 stars">
+              ★
+            </button>
+            <button type="button" class="star" data-value="5" aria-label="5 stars">
+              ★
+            </button>
+          </div>
+
+          <input type="hidden" id="ratingValue" name="rating" value="0" />
+
+          <button type="button" class="submit-btn" id="submitRating" disabled>
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Presentation Day -->
+    <div id="mode-presentation" class="big hidden">
+      <h2 class="popup-header">Hari Presentasi</h2>
+      <iframe id="vid-presentation-day" src="https://www.youtube.com/embed/TuHMaFgQXsQ" title="Hari Presentasi"
+        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    </div>
+
+    <!-- Rating -->
+    <div id="mode-rating" class="big hidden">
+      <h2 class="popup-header">Rating</h2>
+      <div id="rating-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Info -->
+<div class="overlay" id="overlay">
+  <div class="popup-info" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+    <div class="popup-info-header">
+      <div class="title" id="popupTitle">
+        <span class="led"></span>
+        CODEC / OOP QUIZ
+      </div>
+      <button class="close" id="closePopup">Close</button>
+    </div>
+
+    <div class="content">
+      <div class="portrait">
+        <div id="pixiWrap"></div>
+        <div class="note" style="text-align: center">THE ASDOS</div>
+      </div>
+
+      <div class="dialog">
+        <div class="dialog-text" id="dialogText"></div>
+        <div class="actions" id="actions"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="loader">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading...</div>
+  </div>
+</div>
