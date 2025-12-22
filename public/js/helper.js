@@ -55,7 +55,7 @@ A) POPUP DATA CACHE (localStorage)
    */
   async function fetchPopupData() {
     console.log("[POPUP] Fetching from API...");
-    const res = await fetch("http://localhost:8080/api/projects");
+    const res = await fetch(`${S.BASE_URL}/api/projects`);
     console.log("[POPUP] response", res);
     if (!res.ok) {
       throw new Error("HTTP " + res.status);
@@ -127,7 +127,7 @@ A) POPUP DATA CACHE (localStorage)
     const title = data?.title ?? "Info";
     const desc = data?.description ?? "-";
 
-    S.popupImgEl.src = "http://localhost:8080/" + imageUrl;
+    S.popupImgEl.src = S.BASE_URL + imageUrl;
     S.popupTitleEl.textContent = title;
     S.popupDescEl.textContent = desc;
     S.popupTopEl.classList.remove("hidden");
