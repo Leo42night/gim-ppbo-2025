@@ -16,27 +16,14 @@ class Api extends Controller
     echo "API Kelas PBO 2025";
   }
 
-  public function users()
+  public function projects()
   {
-    $data = $this->model("User_model")->getAll();
+    $data = $this->model("Project_model")->getAll();
     echo json_encode($data);
   }
 
-  public function projects($req = [])
-  {
-    $id = $req['id'] ?? null;
-    if ($id) {
-      $data = $this->model("Project_model")->getById($id);
-      echo json_encode($data);
-      return;
-    } else {
-      $data = $this->model("Project_model")->getAll();
-      echo json_encode($data);
-    }
-  }
-
   // get rating of each project (name, avg_rate, total_rate)
-  public function rating()
+  public function ratings()
   {
     $data = $this->model("Project_model")->getRatingProjects();
     echo json_encode($data);
@@ -60,6 +47,38 @@ class Api extends Controller
       'name' => $u->name,
       'picture' => $u->picture,
     ]);
+  }
+
+  public function getrate($req = []) {
+    $user_id = $req['user_id'] ?? null;
+    $project_id = $req['project_id'] ?? null;
+    $data = $this->model("Rating_model")->getRate($project_id, $user_id);
+    echo json_encode($data);
+  }
+
+  public function rate()
+  {
+    if($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      http_response_code(405);
+      echo json_encode(['error' => 'method_not_allowed', 'message' => 'Method not allowed']);
+      return;
+    }
+
+    $req = json_decode(file_get_contents('php://input'), true);
+    $project_id = $req['project_id'] ?? null;
+    $rate = $req['rating'] ?? null;
+    $user_id = $this->getAuthUser()->sub ?? null;
+
+    $ok = $this->model("Rating_model")->getRate($project_id, $user_id);
+    if ($ok) { // update
+      $result = $this->model("Rating_model")->update($user_id, $project_id, $rate);
+      http_response_code(201);
+      echo json_encode(['success' => true, 'message' => 'Rating updated', 'data' => $result]);
+    } else {
+      $data = $this->model("Rating_model")->store($user_id, $project_id, $rate);
+      http_response_code(200);
+      echo json_encode(['success' => true, 'message' => 'Rating saved', 'data' => $data]);
+    }
   }
 
 

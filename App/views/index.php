@@ -4,6 +4,33 @@
   <div>Klik di map untuk bergerak</div>
 </div>
 
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="loader">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading...</div>
+  </div>
+</div>
+
+<!-- Flash Card -->
+<div id="flashCard" class="flash-card hidden" role="status" aria-live="polite">
+  <div class="flash-inner">
+    <div class="flash-icon" id="flashIcon" aria-hidden="true"></div>
+
+    <div class="flash-content">
+      <div class="flash-title" id="flashTitle">Info</div>
+      <div class="flash-message" id="flashMessage">Message here...</div>
+    </div>
+
+    <button class="flash-close" id="flashCloseBtn" aria-label="Close">✕</button>
+  </div>
+
+  <!-- time slider -->
+  <div class="flash-progress">
+    <div class="flash-progress-bar" id="flashProgressBar"></div>
+  </div>
+</div>
+
 <!-- Top-right login button -->
 <div class="top-right">
   <button id="googleLoginBtn" class="login-btn">
@@ -64,13 +91,13 @@
       </div>
 
       <!-- rate -->
-      <div class="">
-        <div>
-          Silakan <a href="" class="">Login</a> untuk memberi rating. Email
-          yang diterima hanya akun Sisfo UNTAN
+      <div style="padding-top: 10px">
+        <div id="loginMessage">
+          Silakan <button id="loginPopupBtn">Login</button> untuk memberi rating. Email
+          yang diterima hanya Mahasiswa Sisfo UNTAN
           (H1101xx10xx@student.untan.ac.id)
         </div>
-        <div class="rating-row hidden">
+        <div class="rating-row hidden" id="rateForm">
           <div class="stars" id="stars" aria-label="Rating" role="radiogroup">
             <button type="button" class="star" data-value="1" aria-label="1 star">
               ★
@@ -136,13 +163,5 @@
         <div class="actions" id="actions"></div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- Loading Overlay -->
-<div id="loadingOverlay" class="loading-overlay hidden">
-  <div class="loader">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading...</div>
   </div>
 </div>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="isometric" renderorder="right-down" width="10" height="14" tilewidth="128" tileheight="64" infinite="0" nextlayerid="11" nextobjectid="55">
+ <tileset firstgid="1" source="iso.tsx"/>
+ <layer id="1" name="background" width="10" height="14">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,13,13,13,13,13,13,0,0,0,
+18,0,16,16,16,16,16,16,0,0,
+18,15,6,6,6,6,6,6,25,0,
+18,17,6,6,6,6,6,6,25,0,
+18,15,6,6,6,6,6,6,25,0,
+18,15,6,6,6,6,6,6,25,0,
+18,15,6,6,6,6,6,6,25,0,
+18,17,6,6,6,6,6,6,25,0,
+18,15,6,6,6,6,6,6,25,0,
+18,15,6,6,6,6,6,6,25,0,
+18,15,6,6,6,6,6,6,25,0,
+18,17,6,6,6,6,6,6,25,0,
+0,15,6,6,6,6,6,6,25,0
+</data>
+ </layer>
+ <layer id="2" name="triggerTile" width="10" height="14">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,30,0,0,0,0,0,
+0,0,0,29,0,0,0,0,0,0,
+39,0,0,50,0,0,0,0,0,0,
+0,0,0,51,0,0,0,0,0,0,
+0,0,0,52,0,0,0,0,0,0,
+0,0,0,53,0,0,0,0,0,0,
+0,0,0,54,0,0,0,0,0,0,
+0,0,0,55,0,0,0,0,0,0,
+0,0,0,56,0,0,0,0,0,0,
+0,0,0,57,0,0,0,0,0,0,
+0,0,0,59,0,0,0,0,0,0,
+0,0,0,58,0,0,42,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="foreground" width="10" height="14">
+  <properties>
+   <property name="change" value=""/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,21,0,0,
+0,0,0,0,0,0,0,17,0,0,
+0,0,0,0,0,0,0,20,0,0,
+0,0,0,0,0,0,0,17,0,0,
+0,0,0,0,0,0,0,20,0,0,
+0,0,0,0,0,0,0,20,0,0,
+0,0,0,0,0,0,0,17,0,0,
+0,0,0,0,0,0,0,20,0,0,
+0,0,0,0,0,0,0,20,0,0,
+0,0,0,0,0,0,0,17,0,0,
+0,0,0,0,0,0,0,20,0,0
+</data>
+ </layer>
+ <objectgroup color="#ff0000" id="7" name="collisions" opacity="0.7">
+  <object id="9" x="510.941" y="246.788" width="0.0939433" height="649.212"/>
+  <object id="10" x="511.739" y="191.813" width="0.184481" height="8.0334"/>
+  <object id="26" x="575" y="191.375" width="5" height="704.125"/>
+  <object id="27" x="127.978" y="895.972" width="452.014" height="4.52778"/>
+  <object id="28" x="124.714" y="191.808" width="3.29356" height="708.489"/>
+  <object id="29" x="124.687" y="188.474" width="454.757" height="3.30682"/>
+  <object id="35" x="371" y="809" width="84.8334" height="86.1666"/>
+  <object id="37" x="194.091" y="226.636">
+   <polygon points="0,0 28.4545,28.6364 60.6364,-3.18182 31.8182,-31.8182"/>
+  </object>
+  <object id="38" x="241" y="279.5">
+   <polygon points="0,0 -29.25,-0.75 -29,93.5 -7.125,94.125 -4.875,53.875 1.125,54.375"/>
+  </object>
+  <object id="39" x="241.375" y="408.125">
+   <polygon points="0,0 -29.25,-0.75 -29,93.5 -7.125,94.125 -4.875,53.875 1.125,54.375"/>
+  </object>
+  <object id="40" x="241.185" y="536.75">
+   <polygon points="0,0 -27.6852,-0.75 -27.4486,93.5 -6.74383,94.125 -4.6142,53.875 1.06481,54.375"/>
+  </object>
+  <object id="42" x="241.688" y="664.5">
+   <polygon points="0,0 -28.4375,-0.75 -28.1944,93.5 -6.92708,94.125 -4.73958,53.875 1.09375,54.375"/>
+  </object>
+  <object id="43" x="241.973" y="792.364">
+   <polygon points="-0.71875,-0.15625 -28.7083,-0.75 -28.463,93.5 -6.99306,94.125 -4.78472,53.875 -0.177083,54.1563"/>
+  </object>
+ </objectgroup>
+ <objectgroup color="#0000ff" id="8" name="trigger" opacity="0.5">
+  <properties>
+   <property name="target" value="51"/>
+  </properties>
+  <object id="11" x="255.619" y="189.313" width="155.455" height="12">
+   <properties>
+    <property name="mode" value="archive"/>
+    <property name="target" value="30"/>
+   </properties>
+  </object>
+  <object id="14" x="190.445" y="226.576">
+   <properties>
+    <property name="mode" value="present"/>
+    <property name="target" value="29"/>
+   </properties>
+   <polygon points="-0.142068,-0.606075 34.3173,33.2875 67.7822,-2.70403 34.6645,-35.0591"/>
+  </object>
+  <object id="15" x="210.989" y="277.955" width="42.7614" height="54.2955">
+   <properties>
+    <property name="mode" value="top"/>
+    <property name="target" value="50"/>
+    <property name="tim" value="1"/>
+   </properties>
+  </object>
+  <object id="17" x="210.974" y="405.636" width="43.1023" height="55.0227">
+   <properties>
+    <property name="mode" value="top"/>
+    <property name="target" value="52"/>
+    <property name="tim" value="2"/>
+   </properties>
+  </object>
+  <object id="18" x="212.195" y="536.733" width="41.8892" height="52.3864">
+   <properties>
+    <property name="mode" value="top"/>
+    <property name="target" value="54"/>
+    <property name="tim" value="3"/>
+   </properties>
+  </object>
+  <object id="20" x="207.801" y="790.165" width="43.9196" height="51.5909">
+   <properties>
+    <property name="mode" value="top"/>
+    <property name="target" value="59"/>
+    <property name="tim" value="5"/>
+   </properties>
+  </object>
+  <object id="32" x="208.051" y="659.852" width="45.2746" height="50.6534">
+   <properties>
+    <property name="mode" value="top"/>
+    <property name="target" value="56"/>
+    <property name="tim" value="4"/>
+   </properties>
+  </object>
+  <object id="16" x="210.968" y="333.727" width="41.9862" height="41.2727">
+   <properties>
+    <property name="mode" value="com"/>
+    <property name="target" value="51"/>
+    <property name="tim" value="1"/>
+   </properties>
+  </object>
+  <object id="21" x="211.227" y="461.772" width="42.8181" height="41.409">
+   <properties>
+    <property name="mode" value="com"/>
+    <property name="target" value="53"/>
+    <property name="tim" value="2"/>
+   </properties>
+  </object>
+  <object id="22" x="212.704" y="590.386" width="41.5454" height="41.2571">
+   <properties>
+    <property name="mode" value="com"/>
+    <property name="target" value="55"/>
+    <property name="tim" value="3"/>
+   </properties>
+  </object>
+  <object id="24" x="208.477" y="843.25" width="43.4392" height="45.0909">
+   <properties>
+    <property name="mode" value="com"/>
+    <property name="target" value="58"/>
+    <property name="tim" value="5"/>
+   </properties>
+  </object>
+  <object id="31" x="208.54" y="712.187" width="44.4716" height="48.375">
+   <properties>
+    <property name="mode" value="com"/>
+    <property name="target" value="57"/>
+    <property name="tim" value="4"/>
+   </properties>
+  </object>
+  <object id="25" x="358.204" y="767.237" width="115.65" height="127.013">
+   <properties>
+    <property name="mode" value="info"/>
+    <property name="target" value="42"/>
+   </properties>
+  </object>
+  <object id="33" x="485.485" y="211.054" width="47.7905" height="23.576">
+   <properties>
+    <property name="change" value="21"/>
+    <property name="mode" value="door"/>
+    <property name="target" value="22"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="10" name="layer" visible="0">
+  <object id="36" x="394" y="886">
+   <polygon points="-5.66667,8.33333 -82.6666,-54 -90.1666,-141.167 5,-138.333 40,-102.667"/>
+  </object>
+  <object id="44" x="215.091" y="885.636">
+   <polygon points="0,0 -35.5455,-33.1818 -58.6364,-64.6364 -67.7273,-114.455 -66.9091,-148 9.90909,-101.909 14.4545,-97.3636"/>
+  </object>
+  <object id="45" x="215.705" y="758.022">
+   <polygon points="0,0 -35.5455,-33.1818 -58.6364,-64.6364 -67.7273,-114.455 -66.9091,-148 9.90909,-101.909 14.4545,-97.3636"/>
+  </object>
+  <object id="46" x="215.122" y="630.438">
+   <polygon points="0,0 -35.5455,-33.1818 -58.6364,-64.6364 -67.7273,-114.455 -66.9091,-148 9.90909,-101.909 14.4545,-97.3636"/>
+  </object>
+  <object id="47" x="214.362" y="501.741">
+   <polygon points="0,0 -35.5455,-33.1818 -58.6364,-64.6364 -67.7273,-114.455 -66.9091,-148 9.90909,-101.909 14.4545,-97.3636"/>
+  </object>
+  <object id="48" x="214.549" y="373.803">
+   <polygon points="0,0 -35.5455,-33.1818 -58.6364,-64.6364 -67.7273,-114.455 -66.9091,-148 9.90909,-101.909 14.4545,-97.3636"/>
+  </object>
+  <object id="49" x="198.625" y="229.875">
+   <polygon points="0,0 31.625,-31.625 24.125,-38.625 -39.375,-38.125"/>
+  </object>
+  <object id="54" x="448.25" y="128.75">
+   <polygon points="0,0 63.75,63.25 63.7935,74.1196 22.1875,74.0625 61.9973,112.28 62.5725,767.095 -0.875,702.375"/>
+  </object>
+ </objectgroup>
+</map>

@@ -1,0 +1,210 @@
+/* INFO */
+/* .open-btn {
+  padding: 12px 16px;
+  border: 1px solid rgba(57, 255, 103, 0.5);
+  background: linear-gradient(
+    180deg,
+    rgba(57, 255, 103, 0.18),
+    rgba(57, 255, 103, 0.06)
+  );
+  color: var(--text);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px var(--shadow);
+}
+.open-btn:hover {
+  filter: brightness(1.05);
+} */
+
+/* Overlay popup */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 2000;
+}
+.overlay.show {
+  display: flex;
+}
+
+.popup-info {
+  width: min(920px, 100%);
+  background: radial-gradient(
+      120% 120% at 50% 0%,
+      rgba(57, 255, 103, 0.08),
+      rgba(0, 0, 0, 0)
+    ),
+    linear-gradient(180deg, rgba(6, 30, 13, 0.95), rgba(2, 12, 6, 0.95));
+  border: 1px solid rgba(57, 255, 103, 0.45);
+  border-radius: 16px;
+  box-shadow: 0 22px 70px var(--shadow);
+  overflow: hidden;
+  position: relative;
+}
+
+.popup-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(57, 255, 103, 0.12),
+    rgba(57, 255, 103, 0.04)
+  );
+  border-bottom: 1px solid rgba(57, 255, 103, 0.25);
+}
+
+.title {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--text);
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+
+.led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px rgba(57, 255, 103, 0.9);
+}
+
+.close {
+  appearance: none;
+  border: 1px solid rgba(57, 255, 103, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 14px;
+  padding: 14px;
+}
+
+.portrait {
+  border: 1px solid rgba(57, 255, 103, 0.25);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.45));
+  padding: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.portrait::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(57, 255, 103, 0.08) 0px,
+    rgba(57, 255, 103, 0.08) 2px,
+    rgba(0, 0, 0, 0) 3px,
+    rgba(0, 0, 0, 0) 7px
+  );
+  opacity: 0.45;
+  pointer-events: none;
+  transform: translateY(-10%);
+}
+
+#pixiWrap {
+  width: 100%;
+  aspect-ratio: 241 / 363; /* per-frame ratio */
+  display: grid;
+  place-items: center;
+}
+canvas {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(57, 255, 103, 0.2);
+}
+
+.dialog {
+  border: 1px solid rgba(57, 255, 103, 0.25);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.35));
+  padding: 12px 12px 14px;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dialog-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--text);
+  line-height: 1.45;
+  white-space: pre-wrap;
+  min-height: 120px;
+}
+
+.actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.btn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(57, 255, 103, 0.35);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text);
+  cursor: pointer;
+  transition: 0.12s ease;
+  font-weight: 600;
+}
+.btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.primary {
+  background: linear-gradient(
+    180deg,
+    rgba(57, 255, 103, 0.22),
+    rgba(57, 255, 103, 0.08)
+  );
+  border-color: rgba(57, 255, 103, 0.55);
+}
+
+.note {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+@media (max-width: 760px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+  #pixiWrap {
+    max-width: 260px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 420px) {
+  #pixiWrap {
+    max-width: 160px;
+    margin: 0 auto;
+  }
+}

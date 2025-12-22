@@ -10,5 +10,6 @@
     <link rel="stylesheet" href="<?= BASE_URL ?>/css/info.css" />
     <link rel="stylesheet" href="<?= BASE_URL ?>/css/top-right.css" />
     <link rel="stylesheet" href="<?= BASE_URL ?>/css/loading.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>/css/flash-card.css" />
   </head>
   <body>

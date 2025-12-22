@@ -1,0 +1,66 @@
+/* container kanan atas */
+.top-right{
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+}
+
+/* tombol login / avatar */
+.login-btn{
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,.15);
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2);
+}
+
+.login-btn img{
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+/* dropdown user */
+.user-menu{
+  position: absolute;
+  right: 0;
+  top: 52px;
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  min-width: 160px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
+  display: none;
+}
+
+.user-menu.show{
+  display: block;
+}
+
+.user-name{
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.user-email{
+  font-weight: 400;
+  margin-bottom: 8px;
+  font-size: 10px;
+  opacity: .7;
+}
+
+.logout-btn{
+  width: 100%;
+  border: none;
+  background: #ff4d4d;
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
