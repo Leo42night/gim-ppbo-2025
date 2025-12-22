@@ -28,6 +28,7 @@ define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ? getenv('GOOGLE_CLIENT_ID
 define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ? getenv('GOOGLE_CLIENT_SECRET') : $_ENV['GOOGLE_CLIENT_SECRET'] ?? '');
 define('GOOGLE_REDIRECT_URI', getenv('GOOGLE_REDIRECT_URI') ? getenv('GOOGLE_REDIRECT_URI') : $_ENV['GOOGLE_REDIRECT_URI'] ?? "$base_url/auth/recall");
 define('JWT_SECRET', getenv('JWT_SECRET') ? getenv('JWT_SECRET') : $_ENV['JWT_SECRET'] ?? '');
+define('HTTPS', getenv('HTTPS') ? getenv('HTTPS') : $_ENV['HTTPS'] ?? 'off');
 // echo getenv('TEST') ?? 'gagal'; // untuk dev jika ingin test .env ter load
 // var_dump(getenv('TEST') ? getenv('TEST') : $_ENV['TEST'] ?? 'gagal');
 // die();

@@ -29,7 +29,7 @@ class Auth extends Controller
     $jwt = JWT::encode($payload, $secret, 'HS256');
 
     // Secure flag yang benar
-    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] == 443);
+    $isHttps = HTTPS === 'on';
 
     setcookie("oauth_state_token", $jwt, [
       'expires' => time() + 300,
@@ -64,6 +64,7 @@ class Auth extends Controller
 
     $code = $_GET['code'] ?? null;
     $state = $_GET['state'] ?? null;
+    $isHttps = HTTPS === 'on';
 
     function renderClosePage($ok, $payload = [])
     {
@@ -114,7 +115,7 @@ class Auth extends Controller
       'expires' => time() - 3600,
       'path' => '/',
       'httponly' => true,
-      'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] == 443),
+      'secure' => $isHttps,
       'samesite' => 'Lax'
     ]);
 
@@ -174,7 +175,7 @@ class Auth extends Controller
         'expires' => time() - 3600,
         'path' => '/',
         'httponly' => true,
-        'secure' => isset($_SERVER['HTTPS']),
+        'secure' => HTTPS === 'on',
         'samesite' => 'Lax'
       ]);
 
@@ -217,7 +218,7 @@ class Auth extends Controller
     $userJwt = JWT::encode($userPayload, $secret, 'HS256');
 
     // simpan cookie auth_token (same-origin)
-    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] == 443);
+    $isHttps = HTTPS === 'on';
 
     setcookie("auth_token", $userJwt, [
       'expires' => time() + 86400,
@@ -255,7 +256,7 @@ class Auth extends Controller
       [
         'expires' => time() - 3600,
         'httponly' => true,
-        'secure' => isset($_SERVER['HTTPS']),
+        'secure' => HTTPS === 'on',
         'path' => '/',
         'samesite' => 'Lax'
       ]
