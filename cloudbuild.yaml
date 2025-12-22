@@ -1,3 +1,6 @@
+substitutions:
+  _GOOGLE_CLIENT_ID: "690018681390-b871npco41agqt652a2vp8a2jg7u01kp.apps.googleusercontent.com"
+  _GOOGLE_REDIRECT_URI: "https://kelas-pbo.fun/auth/recall"
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
@@ -23,11 +26,10 @@ steps:
       - '--add-cloudsql-instances=$PROJECT_ID:us-central1:oauth-db'
 
       # 🌱 Environment (NON-sensitive)
-      - '--set-env-vars=DB_NAME=kelas_pbo,DB_USER=app_user,GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_CLIENT_SECRET=${_GOOGLE_CLIENT_SECRET},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI}'
-      # beberapa nilai perlu di 'Substitution variables' di Cloud Build (edit trigger yg dibuat)
+      - '--set-env-vars=DB_NAME=kelas_pbo,DB_USER=app_user,GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI}'
 
-      # 🔐 Secret Manager
-      - '--set-secrets=DB_PASSWORD=db-password:latest'
+      # 🔐 Secret Manager (perlu setup ke G-Cloud Security / Secret Manager)
+      - '--set-secrets=DB_PASSWORD=db-password:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/gim-ppbo:$COMMIT_SHA'
