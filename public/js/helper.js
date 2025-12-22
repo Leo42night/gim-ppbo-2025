@@ -127,7 +127,7 @@ A) POPUP DATA CACHE (localStorage)
     const title = data?.title ?? "Info";
     const desc = data?.description ?? "-";
 
-    S.popupImgEl.src = S.BASE_URL + imageUrl;
+    S.popupImgEl.src = S.BASE_URL + "/" + imageUrl;
     S.popupTitleEl.textContent = title;
     S.popupDescEl.textContent = desc;
     S.popupTopEl.classList.remove("hidden");
@@ -204,6 +204,8 @@ A) POPUP DATA CACHE (localStorage)
 
       S.popupRatingEl.classList.remove("hidden");
       S.popupEl.classList.remove("hidden");
+    } else if (obj.mode === "image") {
+      showGallery();
     }
 
     // Prioritas 2: cache/database
@@ -775,6 +777,7 @@ A) POPUP DATA CACHE (localStorage)
   function clearMapLayers() {
     L.background.removeChildren();
     L.triggerTile.removeChildren();
+    L.mostfront.removeChildren();
     L.foreground.removeChildren();
     L.objectsDebug.removeChildren();
     L.markers.removeChildren();
@@ -817,7 +820,7 @@ A) POPUP DATA CACHE (localStorage)
 
     const texturesByLocalId = await buildTexturesFromTSX(tsxDoc, baseDir);
 
-    // ✅ TAMBAHKAN: Simpan untuk digunakan changeSprite()
+    // ✅ TAMBAHKAN: Simpan untuk digunakan openDoor()
     S.tilesetTextures = texturesByLocalId;
     S.tilesetFirstGid = firstGid;
 
@@ -835,7 +838,9 @@ A) POPUP DATA CACHE (localStorage)
             ? L.triggerTile
             : name === "foreground"
               ? L.foreground
-              : L.background;
+              : name === "mostfront"
+                ? L.mostfront
+                : L.background;
 
       for (let row = 0; row < S.MAP_H; row++) {
         for (let col = 0; col < S.MAP_W; col++) {
@@ -1032,15 +1037,15 @@ A) POPUP DATA CACHE (localStorage)
     return btn;
   }
 
-  async function changeSprite(props) {
+  async function openDoor(props) {
     if (!props.target || !props.change) return;
 
     // props.target = tile ID di layer (contoh: 22)
     // Ini adalah GID (Global ID) = firstGid + localId
     const targetGid = Number(props.target);
-    console.log("[SPRITE] changeSprite", targetGid, props.change);
+    // console.log("[SPRITE] openDoor", targetGid, props.change);
     const list = S.tileSpritesByGid.get(targetGid);
-    console.log("[SPRITE] list", list);
+    // console.log("[SPRITE] list", list);
 
     if (!list || !list.length) {
       console.warn(`[SPRITE] No sprites found for GID ${targetGid}`);
@@ -1071,8 +1076,8 @@ A) POPUP DATA CACHE (localStorage)
         console.log(`[SPRITE] Changed sprite at (${sp.x}, ${sp.y})`);
       });
 
-      console.log(`[SPRITE] ✅ Changed ${list.length} sprites from GID ${targetGid} to GID ${changeGid}`);
-
+      // console.log(`[SPRITE] ✅ Changed ${list.length} sprites from GID ${targetGid} to GID ${changeGid}`);
+      S.doorOpen = true; 
     } catch (err) {
       console.error(`[SPRITE] Failed to change sprite:`, err);
     }
@@ -1091,13 +1096,13 @@ A) POPUP DATA CACHE (localStorage)
         // case: door open
         if (props?.mode === "door") {
           // console.log("[TRIGGER] door open");
-          changeSprite(props);
+          openDoor(props);
           // return;
+        } else {
+          // case: popup
+          glowTargetFromProps(props);
+          showTriggerButton(props); // tombol di tengah tile
         }
-
-        // case: popup
-        glowTargetFromProps(props);
-        showTriggerButton(props); // tombol di tengah tile
       }
 
       // change player layer
@@ -1116,6 +1121,11 @@ A) POPUP DATA CACHE (localStorage)
         removeGlowTarget();
         removeTriggerButton();
         closePopup();
+        if(S.doorOpen) {
+          // console.log("[TRIGGER] door close");
+          openDoor({change: '22', target: '22'});
+          S.doorOpen = false;
+        }
       }
 
       // change player layer

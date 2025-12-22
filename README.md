@@ -22,6 +22,11 @@ Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
   - Linux/MacOS: `openssl rand -hex 32`
   - Powersheel: `[guid]::NewGuid()`
   
+## Deployment Setup
+- Google Cloud Build (auto-trigger from repo Github)
+- Google Cloud Run (domain mapping)
+- Google Cloud SQL (socket connection)
+
 ## Run
 ```bash
 php -S localhost:8080 -t public

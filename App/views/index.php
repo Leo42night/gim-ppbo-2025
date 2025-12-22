@@ -141,8 +141,8 @@
   </div>
 </div>
 
-<!-- Info -->
-<div class="overlay" id="overlay">
+<!-- Info quiz -->
+<div id="overlay" class="overlay show">
   <div class="popup-info" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
     <div class="popup-info-header">
       <div class="title" id="popupTitle">
@@ -165,3 +165,30 @@
     </div>
   </div>
 </div>
+
+<!-- Image -->
+<div class="background-overlay" id="background-overlay"></div>
+
+<div class="gallery-container" id="gallery">
+  <div class="images-wrapper">
+    <div class="photo-card" onclick="focusPhoto(this)">
+      <img class="photo-content" src="<?= BASE_URL ?>/img/happy.jpeg" alt="happy">
+      <div class="photo-caption">Happy</div>
+    </div>
+    <div class="photo-card" onclick="focusPhoto(this)">
+      <img class="photo-content" src="<?= BASE_URL ?>/img/angry.jpeg" alt="angry">
+      <div class="photo-caption">Angry</div>
+    </div>
+    <div class="photo-card" onclick="focusPhoto(this)">
+      <img class="photo-content" src="<?= BASE_URL ?>/img/stressed.jpeg" alt="stressed">
+      <div class="photo-caption">Stressed</div>
+    </div>
+  </div>
+
+  <div class="text-area">
+    <h2>Terimakasih telah berkunjung!</h2>
+    <p>Ekspresi mana yang menurut anda paling cocok dari tugas yang tiap tim kerjakan?</p>
+  </div>
+</div>
+
+<button class="close-btn" id="closeBtn" onclick="closeGallery()">×</button>

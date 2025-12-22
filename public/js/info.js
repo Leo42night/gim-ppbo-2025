@@ -202,7 +202,21 @@ async function initPixi() {
   }
 
   sprite = new PIXI.Sprite(frames[0]);
-  sprite.anchor.set(0.81);
+  // tampilkan width screen
+  // app.renderer.width: 271
+  console.log("app.renderer.width:", app.renderer.width);
+  // sprite.anchor.set(0.65); 
+  if(app.renderer.width >= 271 && app.renderer.width < 325){
+    sprite.anchor.set(0.55); 
+  } else if (app.renderer.width >= 325 && app.renderer.width < 362){
+    sprite.anchor.set(0.65);
+  } else if (app.renderer.width >= 362 && app.renderer.width < 482){
+    sprite.anchor.set(0.75); 
+  } else if (app.renderer.width >= 482){
+    sprite.anchor.set(1);
+  } else {
+    sprite.anchor.set(0.5);
+  }
   sprite.x = app.renderer.width / 2;
   sprite.y = app.renderer.height / 2;
 

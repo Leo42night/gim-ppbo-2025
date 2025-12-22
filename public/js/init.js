@@ -47,6 +47,7 @@ console.log("PIXI.VERSION:", PIXI.VERSION);
     background: new PIXI.Container(),
     triggerTile: new PIXI.Container(),
     foreground: new PIXI.Container(),
+    mostfront: new PIXI.Container(),
     entities: new PIXI.Container(),
     objectsDebug: new PIXI.Container(),
     markers: new PIXI.Container(),
@@ -58,6 +59,7 @@ console.log("PIXI.VERSION:", PIXI.VERSION);
   L.background.zIndex = 0;
   L.triggerTile.zIndex = 200;
   L.foreground.zIndex = 300;
+  L.mostfront.zIndex = 350;
   L.entities.zIndex = 400; // default: player di depan triggerTile & foreground
   L.objectsDebug.zIndex = 500;
   L.markers.zIndex = 600;
@@ -67,6 +69,7 @@ console.log("PIXI.VERSION:", PIXI.VERSION);
   mapContainer.addChild(L.background);
   mapContainer.addChild(L.triggerTile);
   mapContainer.addChild(L.foreground);
+  mapContainer.addChild(L.mostfront);
   mapContainer.addChild(L.entities); // akan di bawah layer "foreground" & "triggerTile" jika enter layerPoly
   mapContainer.addChild(L.objectsDebug);
   mapContainer.addChild(L.markers);
@@ -145,6 +148,9 @@ console.log("PIXI.VERSION:", PIXI.VERSION);
 
     // share query
     selectedProjectId: null, // 1 - 5
+    
+    // Door state (open, closed)
+    doorOpen: false,
 
     // POPUP
     popupEl: document.getElementById("tilePopup"),

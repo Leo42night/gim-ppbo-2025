@@ -1,0 +1,345 @@
+.background-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 40%,
+    rgba(0, 0, 0, 0.9) 70%,
+    black 100%
+  );
+  display: none;
+  z-index: 1000;
+}
+
+.background-overlay.active {
+  display: block;
+  animation: fadeInImage 0.5s ease;
+}
+
+@keyframes fadeInImage {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.gallery-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.gallery-container.active {
+  pointer-events: all;
+}
+
+.images-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-25%, -50%);
+  width: 100%;
+  height: clamp(260px, 55vh, 420px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-card {
+  position: absolute;
+  width: clamp(260px, 40vw, 420px);
+  background: white;
+  border-radius: 4px;
+  padding: clamp(8px, 1.5vw, 14px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+
+  transform: translateY(-150%);
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    opacity 0.5s ease;
+}
+
+.photo-card.slide-in {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.photo-card:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+}
+
+.photo-card.active {
+  z-index: 100 !important;
+  transform: translateY(0) rotate(0deg) scale(1.05) !important;
+}
+
+.photo-card:nth-child(1) {
+  left: clamp(-140px, -18vw, -220px);
+  transform: translateY(-150%) rotate(-7deg);
+  z-index: 3;
+  transition-delay: 0.1s;
+}
+
+.photo-card:nth-child(2) {
+  left: 0;
+  transform: translateY(-150%) rotate(3deg);
+  z-index: 2;
+  transition-delay: 0.3s;
+}
+
+.photo-card:nth-child(3) {
+  left: clamp(140px, 18vw, 220px);
+  transform: translateY(-150%) rotate(-5deg);
+  z-index: 1;
+  transition-delay: 0.5s;
+}
+
+.photo-card:nth-child(1).slide-in {
+  transform: translateY(0) rotate(-7deg);
+}
+
+.photo-card:nth-child(2).slide-in {
+  transform: translateY(0) rotate(3deg);
+}
+
+.photo-card:nth-child(3).slide-in {
+  transform: translateY(0) rotate(-5deg);
+}
+
+.photo-content {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 3px;
+  display: block;
+}
+
+.photo-caption {
+  margin-top: 10px;
+  font-family: "Courier New", monospace;
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  color: #333;
+  text-align: center;
+  font-style: italic;
+}
+
+.text-area {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: clamp(20px, 5vw, 40px);
+  text-align: center;
+
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all 0.6s ease;
+  transition-delay: 0.7s;
+}
+
+.text-area.slide-in {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.text-area h2 {
+  color: white;
+  font-size: clamp(22px, 4vw, 32px);
+}
+
+.text-area p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(14px, 2.8vw, 18px);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.close-btn {
+  position: fixed;
+  top: 4rem;
+  right: 1rem;
+  width: clamp(2.4rem, 5vw, 3rem);
+  height: clamp(2.4rem, 5vw, 3rem);
+  font-size: clamp(24px, 4vw, 30px);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  color: white;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1002;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.close-btn.active {
+  display: flex;
+  animation: fadeInImage 0.5s ease;
+}
+
+/* =========================
+   RESPONSIVE – SMALL SCREEN
+   ========================= */
+@media (max-width: 768px) {
+  .gallery-container {
+    padding-top: 0;
+    justify-content: center;
+  }
+
+  .images-wrapper {
+    margin-left: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: clamp(220px, 40vh, 300px);
+  }
+
+  .photo-card {
+    width: clamp(240px, 80vw, 320px);
+    padding: 10px;
+  }
+
+  .photo-content {
+    height: clamp(200px, 35vh, 260px);
+    font-size: 60px;
+  }
+
+  .photo-caption {
+    font-size: 1.4rem;
+  }
+
+  /* Stack lebih rapat */
+  .photo-card:nth-child(1) {
+    left: -60px;
+    transform: translateY(-150%) rotate(-6deg);
+  }
+
+  .photo-card:nth-child(2) {
+    left: 0;
+    transform: translateY(-150%) rotate(2deg);
+  }
+
+  .photo-card:nth-child(3) {
+    left: 60px;
+    transform: translateY(-150%) rotate(-4deg);
+  }
+
+  .photo-card:nth-child(1).slide-in {
+    transform: translateY(0) rotate(-6deg);
+  }
+
+  .photo-card:nth-child(2).slide-in {
+    transform: translateY(0) rotate(2deg);
+  }
+
+  .photo-card:nth-child(3).slide-in {
+    transform: translateY(0) rotate(-4deg);
+  }
+
+  .text-area {
+    padding: 25px 15px;
+  }
+
+  .text-area h2 {
+    font-size: 24px;
+  }
+
+  .text-area p {
+    font-size: 15px;
+  }
+
+  .close-btn {
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 426px) {
+
+  /* Center container */
+  .images-wrapper {
+    height: clamp(200px, 40vh, 280px);
+    /* transform: translate(0%, -50%); */
+    margin-left: 3rem;
+  }
+
+  /* Card */
+  .photo-card {
+    width: clamp(200px, 65vw, 280px);
+    padding: 8px;
+  }
+
+  /* Image tetap 4:3 */
+  .photo-content {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  /* Caption */
+  .photo-caption {
+    font-size: clamp(1rem, 4vw, 1.4rem);
+  }
+
+  /* Stack dipersempit agar aman di layar kecil */
+  .photo-card:nth-child(1) {
+    left: clamp(-50px, -12vw, -80px);
+    transform: translateY(-150%) rotate(-5deg);
+  }
+
+  .photo-card:nth-child(2) {
+    left: 0;
+    transform: translateY(-150%) rotate(2deg);
+  }
+
+  .photo-card:nth-child(3) {
+    left: clamp(50px, 12vw, 80px);
+    transform: translateY(-150%) rotate(-4deg);
+  }
+
+  .photo-card:nth-child(1).slide-in {
+    transform: translateY(0) rotate(-5deg);
+  }
+
+  .photo-card:nth-child(2).slide-in {
+    transform: translateY(0) rotate(2deg);
+  }
+
+  .photo-card:nth-child(3).slide-in {
+    transform: translateY(0) rotate(-4deg);
+  }
+
+  /* Text area */
+  .text-area {
+    padding: 20px 12px;
+  }
+
+  .text-area h2 {
+    font-size: clamp(20px, 5vw, 24px);
+  }
+
+  .text-area p {
+    font-size: clamp(14px, 4vw, 16px);
+  }
+
+  /* Close button */
+  .close-btn {
+    top: 1rem;
+    right: 4rem;
+    width: 2.3rem;
+    height: 2.3rem;
+    font-size: 24px;
+  }
+}
