@@ -23,10 +23,10 @@ steps:
       - '--allow-unauthenticated'
 
       # 🔑 Cloud SQL Connector
-      - '--add-cloudsql-instances=$PROJECT_ID:us-central1:oauth-db'
+      - '--add-cloudsql-instances=$PROJECT_ID:asia-southeast1:mysql-8-2v-10g-singapore'
 
       # 🌱 Environment (NON-sensitive)
-      - '--set-env-vars=DB_NAME=kelas_pbo,DB_USER=app_user,GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI}'
+      - '--set-env-vars=DB_NAME=kelas_pbo,DB_USER=root,GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI}'
 
       # 🔐 Secret Manager (perlu setup ke G-Cloud Security / Secret Manager)
       - '--set-secrets=DB_PASSWORD=db-password:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest'
