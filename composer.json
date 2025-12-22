@@ -1,6 +1,6 @@
 {
-    "name": "myapp/google-oauth-php",
-    "description": "Simple PHP app with Google OAuth",
+    "name": "ppbo-2025/gim",
+    "description": "Gim virtual tour from PPBO 2025 (Capstone Project)",
     "type": "project",
     "require": {
         "php": "^8.2",
