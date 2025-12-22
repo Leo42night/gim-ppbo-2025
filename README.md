@@ -2,6 +2,7 @@
 Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
 - Isomorphic 2D JS Engine Game (PixiJs)
 - Showroom project
+- OAuth Google
 - Voting system by Untan email & Leaderboard
 - Quiz OOP
 
