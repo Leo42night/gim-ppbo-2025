@@ -14,15 +14,19 @@ steps:
       - 'run'
       - 'deploy'
       - 'gim-ppbo'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/gim-ppbo:$COMMIT_SHA'
-      - '--region'
-      - 'asia-southeast1'
-      - '--platform'
-      - 'managed'
+      - '--image=gcr.io/$PROJECT_ID/gim-ppbo:$COMMIT_SHA'
+      - '--region=asia-southeast1'
+      - '--platform=managed'
       - '--allow-unauthenticated'
-      - '--set-env-vars'
-      - 'GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_CLIENT_SECRET=${_GOOGLE_CLIENT_SECRET},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI}'
+
+      # 🔑 Cloud SQL Connector
+      - '--add-cloudsql-instances=PROJECT_ID:asia-southeast1:INSTANCE_NAME'
+
+      # 🌱 Environment (NON-sensitive)
+      - '--set-env-vars=DB_NAME=mydb,DB_USER=app_user,GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_CLIENT_SECRET=${_GOOGLE_CLIENT_SECRET},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI}'
+
+      # 🔐 Secret Manager
+      - '--set-secrets=DB_PASSWORD=db-password:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/gim-ppbo:$COMMIT_SHA'
