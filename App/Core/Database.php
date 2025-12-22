@@ -2,7 +2,7 @@
 
 class Database
 {
-  private $instance = DB_INSTANCE; // project:region:instance
+  private $instance = DB_INSTANCE; // g-cloud: project:region:instance
   private $name = DB_NAME;
   private $user = DB_USER;
   private $pass = DB_PASSWORD;

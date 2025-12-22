@@ -13,9 +13,10 @@ $base_url = strpos($host, 'localhost') !== false ?
 // ?? will skip error
 // ?: will show if key doesn't exist
 define('BASE_URL', $base_url);
+define('DB_INSTANCE', $_ENV['DB_INSTANCE'] ?? '');
 define('DB_NAME', $_ENV['DB_NAME'] ?? 'kelas_pbo');
 define('DB_USER', $_ENV['DB_USER'] ?? 'root');
-define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_PASSWORD', $_ENV['DB_PASSWORD'] ?? '');
 
 // Auth
 define('GOOGLE_CLIENT_ID', $_ENV['GOOGLE_CLIENT_ID'] ?? '');
