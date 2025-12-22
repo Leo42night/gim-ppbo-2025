@@ -20,10 +20,11 @@ steps:
       - '--allow-unauthenticated'
 
       # 🔑 Cloud SQL Connector
-      - '--add-cloudsql-instances=PROJECT_ID:asia-southeast1:INSTANCE_NAME'
+      - '--add-cloudsql-instances=$PROJECT_ID:us-central1:oauth-db'
 
       # 🌱 Environment (NON-sensitive)
-      - '--set-env-vars=DB_NAME=mydb,DB_USER=app_user,GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_CLIENT_SECRET=${_GOOGLE_CLIENT_SECRET},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI}'
+      - '--set-env-vars=DB_NAME=kelas_pbo,DB_USER=app_user,GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_CLIENT_SECRET=${_GOOGLE_CLIENT_SECRET},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI}'
+      # beberapa nilai perlu di 'Substitution variables' di Cloud Build (edit trigger yg dibuat)
 
       # 🔐 Secret Manager
       - '--set-secrets=DB_PASSWORD=db-password:latest'
