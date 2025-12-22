@@ -13,7 +13,10 @@ Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
 - ratings (user_id, project_id, rate, created_at)
 
 ## Config
-- Setup Google Auth Client Web App (+Authorize Redirect)
+- Setup Google Auth:
+  - APIs & Services → OAuth consent screen 
+  - APIs & Services → Credentials → Create Credentials → OAuth Client ID
+  - Client Web App (+Authorize Redirect URI)
 - Setup Server PHP & Database (MySQL)
 - JWT Secret (32 - 64 random): 
   - Linux/MacOS: `openssl rand -hex 32`
