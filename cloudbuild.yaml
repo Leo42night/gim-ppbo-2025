@@ -29,7 +29,7 @@ steps:
       - '--set-env-vars=DB_INSTANCE=$PROJECT_ID:asia-southeast1:mysql-8-2v-10g-singapore,DB_NAME=kelas_pbo,DB_USER=app_user,GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_REDIRECT_URI=${_GOOGLE_REDIRECT_URI},HTTPS=on'
 
       # 🔐 Secret Manager (perlu setup ke G-Cloud Security / Secret Manager)
-      - '--set-secrets=DB_PASSWORD=db-password:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest'
+      - '--set-secrets=DB_PASSWORD=db-password:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest,JWT_SECRET=jwt-secret:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/gim-ppbo:$COMMIT_SHA'
