@@ -142,7 +142,7 @@
 </div>
 
 <!-- Info quiz -->
-<div id="overlay" class="overlay show">
+<div id="overlay" class="overlay">
   <div class="popup-info" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
     <div class="popup-info-header">
       <div class="title" id="popupTitle">
