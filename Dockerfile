@@ -3,9 +3,13 @@ FROM php:8.2-apache
 # System deps
 RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
+    default-mysql-client \
     unzip \
     git \
-    && docker-php-ext-install curl \
+    && docker-php-ext-install \
+        pdo \
+        pdo_mysql \
+        curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable rewrite

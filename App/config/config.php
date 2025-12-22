@@ -31,3 +31,4 @@ define('JWT_SECRET', getenv('JWT_SECRET') ? getenv('JWT_SECRET') : $_ENV['JWT_SE
 // echo getenv('TEST') ?? 'gagal'; // untuk dev jika ingin test .env ter load
 // var_dump(getenv('TEST') ? getenv('TEST') : $_ENV['TEST'] ?? 'gagal');
 // die();
+// die();
