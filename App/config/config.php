@@ -30,6 +30,6 @@ define('GOOGLE_REDIRECT_URI', getenv('GOOGLE_REDIRECT_URI') ? getenv('GOOGLE_RED
 define('JWT_SECRET', getenv('JWT_SECRET') ? getenv('JWT_SECRET') : $_ENV['JWT_SECRET'] ?? '');
 define('HTTPS', getenv('HTTPS') ? getenv('HTTPS') : $_ENV['HTTPS'] ?? 'off');
 // echo getenv('TEST') ?? 'gagal'; // untuk dev jika ingin test .env ter load
-// var_dump(getenv('TEST') ? getenv('TEST') : $_ENV['TEST'] ?? 'gagal');
+// var_dump(getenv('HTTPS') ? getenv('HTTPS') : $_ENV['HTTPS'] ?? 'gagal');
 // die();
 // die();

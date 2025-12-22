@@ -102,7 +102,7 @@ class Auth extends Controller
     try {
       $decoded = JWT::decode($jwtCookie, new Key($secret, 'HS256'));
     } catch (\Exception $e) {
-      renderClosePage(false, ['error' => 'invalid_state_token']);
+      renderClosePage(false, ['error' => 'invalid_state_token', 'data' => $e->getMessage(), 'debug' => $e->getTraceAsString(), 'HTTPS' => $isHttps]);
     }
 
     // Cocokkan state
