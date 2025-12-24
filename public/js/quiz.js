@@ -238,17 +238,44 @@ async function initPixi() {
   sprite = new PIXI.Sprite(frames[0]);
   // tampilkan width screen
   // app.renderer.width: 271
-  console.log("app.renderer.width:", app.renderer.width);
-  // sprite.anchor.set(0.65); 
-  if (app.renderer.width < 325) {
-    sprite.anchor.set(0.55);
-  } else if (app.renderer.width >= 325 && app.renderer.width < 362) {
-    sprite.anchor.set(0.65);
-  } else if (app.renderer.width >= 362 && app.renderer.width < 482) {
-    sprite.anchor.set(0.75);
-  } else {
-    sprite.anchor.set(1);
-  }
+  // console.log("app.renderer.width:", app.renderer.width);
+  // sprite.anchor.set(0.65); 181
+  // if(app.renderer.width < 121) {
+  //   sprite.anchor.set(0.25); // 25% (app.renderer.width == 90)
+  // } else if(app.renderer.width >= 121 && app.renderer.width < 181) {
+  //   sprite.anchor.set(0.25); // 33%
+  // } else if(app.renderer.width >= 181 && app.renderer.width < 241) {
+  //   sprite.anchor.set(0.4); // 50%
+  // } else if (app.renderer.width >= 241 && app.renderer.width < 271) {
+  //   sprite.anchor.set(0.5); // 67%
+  // } else if (app.renderer.width >= 271 && app.renderer.width < 289) {
+  //   sprite.anchor.set(0.55); // 75%
+  // } else if (app.renderer.width >= 289 && app.renderer.width < 325) {
+  //   sprite.anchor.set(0.6); // 80%
+  // } else if (app.renderer.width >= 325 && app.renderer.width < 362) {
+  //   sprite.anchor.set(0.65); // 90%
+  // } else if (app.renderer.width >= 362 && app.renderer.width < 398) {
+  //   sprite.anchor.set(0.75); // 100%
+  // } else if (app.renderer.width >= 398 && app.renderer.width < 452) {
+  //   sprite.anchor.set(0.8); // 110%
+  // } else if (app.renderer.width >= 452 && app.renderer.width < 482) {
+  //   sprite.anchor.set(0.95); // 125%
+  // } else {
+  //   sprite.anchor.set(1);
+  // }
+
+  const w = app.renderer.width;
+
+  // linear interpolation (LERP)
+  // m = (anchor₂ - anchor₁) / (width₂ - width₁) = 0.00192
+  // 0.25 = (0.00192 × 90) + b => b = 0.077
+  let anchor = 0.00192 * w + 0.077;
+
+  // clamp supaya aman
+  anchor = Math.max(0.25, Math.min(anchor, 1));
+
+  sprite.anchor.set(anchor);
+
   sprite.x = app.renderer.width / 2;
   sprite.y = app.renderer.height / 2;
 

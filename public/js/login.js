@@ -90,7 +90,7 @@ const logoutBtn = document.getElementById("logoutBtn");
   async function getMeAndSyncState() {
     const meRes = await fetch(`/api/me`, { credentials: "include" });
     const data = await meRes.json();
-    console.log("[ME]:", data);
+    // console.log("[ME]:", data);
 
     if (!meRes.ok || data?.error) {
       // kalau backend bilang unauth, reset state

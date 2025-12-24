@@ -1,4 +1,4 @@
-console.log("PIXI.VERSION:", PIXI.VERSION);
+// console.log("PIXI.VERSION:", PIXI.VERSION);
 
 (() => {
   const BASE_URL = window.location.origin;
@@ -141,6 +141,6 @@ console.log("PIXI.VERSION:", PIXI.VERSION);
 
   window.DLOG = (...args) => {
     if (!window.DEBUG_SLIDE) return;
-    console.log(...args);
+    // console.log(...args);
   };
 })();

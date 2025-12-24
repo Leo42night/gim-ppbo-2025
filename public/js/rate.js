@@ -107,7 +107,7 @@ const loaderEl = document.getElementById("loadingOverlay");
         return;
       }
 
-      console.log("/api/rate:", result.data);
+      // console.log("/api/rate:", result.data);
 
       if (result.data.success) {
         localStorage.setItem(`rating_${S.selectedProjectId}`, rating);

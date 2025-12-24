@@ -122,7 +122,7 @@
 
   // tab: "pitch" | "demo" | "doc"
   function setActiveTab(tab) {
-    console.log("setActiveTab", tab);
+    // console.log("setActiveTab", tab);
     const pitchActive = tab === "pitch";
     const demoActive = tab === "demo";
     const docActive = tab === "doc";
@@ -147,7 +147,7 @@
       stopIframe(el.vid2);
       stopIframe(el.docReport);
     } else if (demoActive) {
-      console.log("open demo");
+      // console.log("open demo");
       stopIframe(el.vid1);
       stopIframe(el.docReport);
     } else if (docActive) {
@@ -227,7 +227,7 @@
     el.webLink.href = data?.link_web || "#";
     el.repoLink.href = data?.link_repo || "#";
 
-    console.log("showPopupCom", data);
+    // console.log("showPopupCom", data);
 
     setActiveTab("pitch");
     // if (data?.link_vid_pitch && !data?.link_vid_demo && !data?.link_doc) {

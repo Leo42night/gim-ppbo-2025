@@ -133,7 +133,7 @@
   }
 
   function _updateRating() {
-    console.log("updateRating", isLoggedIn, projects || []);
+    // console.log("updateRating", isLoggedIn, projects || []);
 
     // 🔥 CLEAR SEKALI
     ratingContainer.innerHTML = "";
@@ -208,7 +208,7 @@
       ratingContainer.appendChild(cell);
     });
 
-    console.log("[RATING] rendered safely");
+    // console.log("[RATING] rendered safely");
   }
 
   const updateRating = debounce(_updateRating, 300);

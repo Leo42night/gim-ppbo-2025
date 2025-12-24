@@ -172,7 +172,7 @@
   }
 
   async function routeTriggerPopup(props) {
-    console.log("routeTriggerPopup", props);
+    // console.log("routeTriggerPopup", props);
     const baseUrl = S.BASE_URL;
 
     if (props.mode === "image") {
@@ -205,7 +205,7 @@
 
     // Data by project id "tim"
     const data = window.GAME_HELPER.getPopupDataByProjectId(props.tim);
-    console.log("data", data);
+    // console.log("data", data);
 
     if (props.mode === "top") window.POPUP.showPopupProject(baseUrl, data || {});
     else if (props.mode === "com") window.POPUP.showPopupCom(data || {});

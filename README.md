@@ -31,6 +31,10 @@ Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
 - [Figma Design](https://www.figma.com/design/VIOwFx2goOaMaFkiq0onVA/tiled?node-id=0-1&t=P67We6aAWDxqfwbW-1) untuk aset UI game.
 - [Tiled app](https://www.mapeditor.org/) editor file `iso.tmx` dan `iso.tsx`
 
+## Asset UI
+- [2dClassroomAssetPackByStyloo](https://styloo.itch.io/2dclassroom)
+- [Eris Esra's Character Template 4.0](https://erisesra.itch.io/character-templates-pack/devlog/1118816/update-40)
+
 ## Run
 ```bash
 php -S localhost:8080 -t public
