@@ -34,7 +34,7 @@
 <!-- Top-right login button -->
 <div class="top-right">
   <button id="googleLoginBtn" class="login-btn">
-    <img id="loginIcon" src="https://developers.google.com/identity/images/g-logo.png" alt="Google Login" />
+    <img id="loginIcon" referrerpolicy="no-referrer" crossorigin="anonymous" src="/img/g-logo.png" alt="Google Login" />
   </button>
 
   <!-- Dropdown user -->
@@ -45,6 +45,7 @@
   </div>
 </div>
 
+<!-- Popup Tile Main -->
 <div id="tilePopup" class="popup hidden">
   <div class="popup-card">
     <button class="popup-close" id="popupCloseBtn">✕</button>
@@ -52,7 +53,7 @@
     <!-- Presentation - Top -->
     <div id="mode-top" class="small hidden">
       <div class="popup-image">
-        <img id="popupImg" src="" alt="Popup Image" />
+        <img id="popupImg" alt="Popup Image" />
       </div>
       <h2 id="popupTitle">Title</h2>
       <p id="popupDesc">Description</p>
@@ -61,33 +62,38 @@
     <!-- Presentation - Com -->
     <div id="mode-com" class="big space-y hidden">
       <div class="popup-video">
-        <div>
-          <h2 class="popup-title">Pitch Deck</h2>
-          <iframe id="vid-pitch-deck" class="" src="https://www.youtube.com/embed/TuHMaFgQXsQ" title="Presentasi"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen></iframe>
-        </div>
-        <div>
-          <h2 class="popup-title">Demo</h2>
-          <iframe id="vid-demo" src="https://www.youtube.com/embed/TuHMaFgQXsQ" title="Demo" frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen></iframe>
-        </div>
-      </div>
-      <div class="link">
-        <div class="link">
-          <a id="webLink" href="#" target="_blank" rel="noopener noreferrer">
-            🌐 Open Website
-          </a>
+        <div class="video-toggle">
+          <button type="button" class="toggle-btn is-active" data-tab="pitch">
+            Pitch Deck
+          </button>
+          <button type="button" class="toggle-btn" data-tab="demo">
+            Demo
+          </button>
         </div>
 
-        <div class="link">
-          <a id="githubLink" href="#" target="_blank" rel="noopener noreferrer">
-            <img src="<?= BASE_URL ?>/img/github.svg" alt="GitHub" width="24" height="24" />
-            Open GitHub
-          </a>
+        <div class="video-stage">
+          <div class="video-loading hidden" id="videoLoading">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading video...</div>
+          </div>
+
+          <iframe id="vid-pitch-deck" class="video-frame is-active" title="Presentasi" frameborder="0" loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+
+          <iframe id="vid-demo" class="video-frame" title="Demo" frameborder="0" loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
         </div>
+
+      </div>
+
+      <div class="popup-link">
+        <a id="webLink" target="_blank" rel="noopener noreferrer">🌐 Open Website</a>
+        <a id="githubLink" target="_blank" rel="noopener noreferrer">
+          <img src="<?= BASE_URL ?>/img/github.svg" alt="GitHub" width="24" height="24" />
+          Open GitHub
+        </a>
       </div>
 
       <!-- rate -->
@@ -97,7 +103,7 @@
           yang diterima hanya Mahasiswa Sisfo UNTAN
           (H1101xx10xx@student.untan.ac.id)
         </div>
-        <div class="rating-row hidden" id="rateForm">
+        <div class="rate-row hidden" id="rateForm">
           <div class="stars" id="stars" aria-label="Rating" role="radiogroup">
             <button type="button" class="star" data-value="1" aria-label="1 star">
               ★
@@ -134,7 +140,7 @@
     </div>
 
     <!-- Rating -->
-    <div id="mode-rating" class="big hidden">
+    <div id="mode-rating" class="hidden">
       <h2 class="popup-header">Rating</h2>
       <div id="rating-container"></div>
     </div>
@@ -187,7 +193,7 @@
 
   <div class="text-area">
     <h2>Terimakasih telah berkunjung!</h2>
-    <p>Ekspresi mana yang menurut anda paling cocok dari tugas yang tiap tim kerjakan?</p>
+    <p>Berikut gambar dari para tim. Ekspresi mana yang menurut anda paling jujur?</p>
   </div>
 </div>
 

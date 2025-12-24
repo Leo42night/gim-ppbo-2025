@@ -27,7 +27,11 @@ Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
 - Google Cloud Run (domain mapping)
 - Google Cloud SQL (socket connection)
 
+## Tools
+- [Figma Design](https://www.figma.com/design/VIOwFx2goOaMaFkiq0onVA/tiled?node-id=0-1&t=P67We6aAWDxqfwbW-1) untuk aset UI game.
+- [Tiled app](https://www.mapeditor.org/) editor file `iso.tmx` dan `iso.tsx`
+
 ## Run
 ```bash
 php -S localhost:8080 -t public
-``` 
+```

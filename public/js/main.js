@@ -1,29 +1,22 @@
-// main.js
+// loop & input
 (() => {
   const G = window.GAME;
   const H = window.GAME_HELPER;
-
   const { app, CFG, mapContainer, L, S } = G;
 
-  /* =========================================================
-  1) INIT POPUP + DEBUG
-  ========================================================= */
-  H.initPopupHandlers();
-  H.installInteractionDebugger();
+  // init util modules
+  window.SOUND?.initSounds();
+  window.POPUP?.initPopupHandlers();
 
-  /* =========================================================
-  2) INPUT (keyboard + pointer)
-  ========================================================= */
+  // input
   window.addEventListener("keydown", (e) => (S.keys[e.key.toLowerCase()] = true));
   window.addEventListener("keyup", (e) => (S.keys[e.key.toLowerCase()] = false));
 
   H.updateStageHitArea();
 
-  // stage pointerdown: hanya set move target kalau klik area kosong
+  // pointer movement (only empty stage)
   app.stage.on("pointerdown", (e) => {
-    if (!S.inputEnabled) return; // block input ketika di luar web
-
-    // kalau klik glow / object lain → JANGAN gerak
+    if (!S.inputEnabled) return;
     if (e.target !== app.stage) return;
 
     const screen = e.global;
@@ -31,6 +24,12 @@
 
     const grid = H.toGridFromIsoTiled(local.x, local.y - H.tileSpriteBaseY());
     S.pointerTarget = { x: grid.x, y: grid.y };
+
+    window.DLOG?.("[CLICK]", {
+      screen: { x: Number(screen.x.toFixed(2)), y: Number(screen.y.toFixed(2)) },
+      local: { x: Number(local.x.toFixed(2)), y: Number(local.y.toFixed(2)) },
+      grid: { x: Number(grid.x.toFixed(3)), y: Number(grid.y.toFixed(3)) },
+    });
 
     // marker
     L.markers.removeChildren();
@@ -41,81 +40,88 @@
     L.markers.addChild(marker);
   });
 
-  /* =========================================================
-  3) GAME LOOP
-  ========================================================= */
+  // game loop
   app.ticker.add(() => {
-    if (!S.worldReady || !S.player) return;
-
-    // kalau game pause, jangan update position, jangan cek hit
-    if (S.gamePaused) return;
+    if (!S.worldReady || !S.player || S.gamePaused) return;
 
     const now = Date.now();
     let dt = (now - S.lastUpdate) / 1000;
     S.lastUpdate = now;
-
-    // clamp dt biar tidak “teleport” kalau drop frame
-    dt = Math.min(dt, 1 / 20); // max 0.05s
+    dt = Math.min(dt, 1 / 20);
 
     const { sx, sy } = H.computeScreenVectorFromInput();
-    const moving = sx !== 0 || sy !== 0;
+    const hasInput = sx !== 0 || sy !== 0;
 
-    if (!moving) {
-      H.updatePlayerAnimation(false, S.currentDir, S.currentIsLeft);
-      H.checkAllObjectHits();
-      return;
+    const prev = { ...S.playerPos };
+
+    if (hasInput) { // movement
+      const gdir = H.screenDirToGridDir(sx, sy);
+      const len = Math.hypot(gdir.x, gdir.y);
+      if (len > 0) { gdir.x /= len; gdir.y /= len; }
+
+      const step = {
+        du: gdir.x * CFG.MOVE_SPEED * dt,
+        dv: gdir.y * CFG.MOVE_SPEED * dt,
+      };
+
+      const speedGrid = Math.hypot(step.du, step.dv) / (dt || 1);
+      const distToTarget = S.pointerTarget
+        ? Math.hypot(S.pointerTarget.x - S.playerPos.x, S.pointerTarget.y - S.playerPos.y)
+        : null;
+
+      window.DLOG?.("[MOVE_INPUT]", {
+        dt: Number(dt.toFixed(4)),
+        sx: Number(sx.toFixed(3)),
+        sy: Number(sy.toFixed(3)),
+        gdir: { x: Number(gdir.x.toFixed(3)), y: Number(gdir.y.toFixed(3)) },
+        step: { du: Number(step.du.toFixed(4)), dv: Number(step.dv.toFixed(4)) },
+        speedGridPerSec: Number(speedGrid.toFixed(3)),
+        pointerTarget: S.pointerTarget
+          ? { x: Number(S.pointerTarget.x.toFixed(3)), y: Number(S.pointerTarget.y.toFixed(3)) }
+          : null,
+        distToTarget: distToTarget != null ? Number(distToTarget.toFixed(3)) : null,
+      });
+
+      // ✅ gunakan sliding move
+      const moved = H.tryMoveWithSliding(S.playerPos, step);
+      if (moved) S.playerPos = moved;
     }
-
-    // screen -> grid dir
-    const gdir = H.screenDirToGridDir(sx, sy);
-    let moveX = gdir.x;
-    let moveY = gdir.y;
-
-    // normalize grid dir
-    const gLen = Math.hypot(moveX, moveY);
-    if (gLen > 0) {
-      moveX /= gLen;
-      moveY /= gLen;
-    }
-
-    // animation by screen angle
-    let angleDeg = (Math.atan2(sy, sx) * 180) / Math.PI;
-    if (angleDeg < 0) angleDeg += 360;
-    const { dir, isLeft } = H.directionFromAngle(angleDeg);
-    H.updatePlayerAnimation(true, dir, isLeft);
-
-    // move & collision
-    const old = { ...S.playerPos };
-
-    S.playerPos.x += moveX * CFG.MOVE_SPEED * dt;
-    S.playerPos.y += moveY * CFG.MOVE_SPEED * dt;
 
     H.clampPlayerToMap();
     H.updatePlayerPosition();
 
-    const foot = { x: S.player.x, y: S.player.y };
-    if (H.isBlockedByCollision(foot, CFG.HIT_RADIUS)) {
-      S.playerPos.x = old.x;
-      S.playerPos.y = old.y;
-      H.updatePlayerPosition();
+    const dx = S.playerPos.x - prev.x;
+    const dy = S.playerPos.y - prev.y;
+    const moving = Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001;
+
+    if (hasInput) { // animation
+      let angleDeg = (Math.atan2(sy, sx) * 180) / Math.PI;
+      if (angleDeg < 0) angleDeg += 360;
+      const { dir, isLeft } = H.directionFromAngle(angleDeg);
+      H.updatePlayerAnimation(moving, dir, isLeft);
+    } else {
+      H.updatePlayerAnimation(false, S.currentDir, S.currentIsLeft);
     }
 
     H.checkAllObjectHits();
     H.centerCameraOnPlayer();
   });
 
-  /* =========================================================
-  4) INIT / RESIZE
-  ========================================================= */
-  Promise.all([H.loadTMXAndBuildMap(CFG.TMX.MAP), H.createPlayerFromSheet(), S.initPopupData()]).then(() => {
+  // init world
+  Promise.all([
+    H.loadTMXAndBuildMap(CFG.TMX.MAP),
+    H.createPlayerFromSheet(),
+    H.initPopupData(),
+  ]).then(() => {
     S.worldReady = true;
     S.lastUpdate = Date.now();
     H.updatePlayerPosition();
     H.centerCameraOnPlayer();
+
+    if (S.isDebug) H.drawObjectDebug();
   });
 
   window.addEventListener("resize", () => {
-    console.log("resize happend");
     H.updateStageHitArea();
     H.centerCameraOnPlayer();
   });

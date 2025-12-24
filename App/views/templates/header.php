@@ -3,6 +3,9 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+      content="img-src 'self' https://lh3.googleusercontent.com https://i.ytimg.com https://ytimg.com data:;">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gim PPBO 2025</title>
   <link rel="icon" type="image/png" href="<?= BASE_URL ?>/favicon/favicon-96x96.png" sizes="96x96" />

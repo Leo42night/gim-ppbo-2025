@@ -1,247 +1,12 @@
-// helper.js
+// map/iso/player/movement/animation/trigger detection
 (() => {
   const G = window.GAME;
-  const R = window.RATING;
   const { app, CFG, worldContainer, mapContainer, L, hitboxGraphic, S } = G;
-  const { paint } = window.RATE;
-  const { isLoggedIn } = window.AUTH;
 
-  /* =========================================================
-A) POPUP DATA CACHE (localStorage)
-========================================================= */
+  /* =========================
+   ISO / GRID CORE
+  ========================= */
 
-  const STORAGE_KEY = "GAME_POPUP_DATA";
-  const STORAGE_TIME_KEY = "GAME_POPUP_DATA_TIME";
-  const CACHE_TTL = 1000 * 60 * 60 * 6; // 6 jam
-
-  /**
-   * Ambil popup data dari localStorage
-   */
-  function loadPopupDataFromStorage() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const time = Number(localStorage.getItem(STORAGE_TIME_KEY));
-
-      if (!raw || !time) return null;
-
-      const age = Date.now() - time;
-      if (age > CACHE_TTL) {
-        console.log("[POPUP] Cache expired");
-        return null;
-      }
-
-      return JSON.parse(raw);
-    } catch (err) {
-      console.warn("[POPUP] Failed to parse cache", err);
-      return null;
-    }
-  }
-
-  /**
-   * Simpan popup data ke localStorage
-   */
-  function savePopupDataToStorage(data) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      localStorage.setItem(STORAGE_TIME_KEY, Date.now().toString());
-      // console.log("[POPUP] Data cached");
-    } catch (err) {
-      console.warn("[POPUP] Failed to save cache", err);
-    }
-  }
-
-  /**
-   * Fetch popup data dari API
-   */
-  async function fetchPopupData() {
-    console.log("[POPUP] Fetching from API...");
-    const res = await fetch(`${S.BASE_URL}/api/projects`);
-    console.log("[POPUP] response", res);
-    if (!res.ok) {
-      throw new Error("HTTP " + res.status);
-    }
-
-    const data = await res.json();
-    console.log("[POPUP] Fetched", data);
-    savePopupDataToStorage(data);
-    return data;
-  }
-
-  /**
-   * Init popup data (cache-first strategy)
-   */
-  async function initPopupData({ force = false } = {}) {
-    if (!force) {
-      const cached = loadPopupDataFromStorage();
-      console.log("[POPUP] Loaded from cache", cached);
-      if (cached) {
-        S.popupDataProjects = cached;
-        return cached;
-      }
-    }
-
-    try {
-      const fresh = await fetchPopupData();
-      S.popupDataProjects = fresh;
-      return fresh;
-    } catch (err) {
-      console.error("[POPUP] Fetch failed", err);
-      S.popupDataProjects = [];
-      return {};
-    }
-  }
-
-  /**
-   * Helper: ambil data popup by trigger ID
-   */
-  function getPopupData(triggerId) {
-    console.log("[POPUP] getPopupData", triggerId);
-    console.log(S.popupDataProjects);
-    return S.popupDataProjects?.find((p) => p.id == triggerId) || null;
-  }
-
-  /**
-   * Helper: clear cache (DEV / logout / debug)
-   */
-  function clearPopupCache() {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(STORAGE_TIME_KEY);
-    console.log("[POPUP] Cache cleared");
-  }
-
-  /* =========================================================
-  B) EXPORT KE GAME
-  ========================================================= */
-
-  S.popupDataProjects = [];
-  S.initPopupData = initPopupData;
-  S.getPopupData = getPopupData;
-  S.clearPopupCache = clearPopupCache;
-
-  /* =========================================================
-  A) UI POPUP
-  ========================================================= */
-  function showPopupProject(data) {
-    console.log("[POPUP] showPopupProject", data);
-    const imageUrl = data?.image ?? "#";
-    const title = data?.title ?? "Info";
-    const desc = data?.description ?? "-";
-
-    S.popupImgEl.src = S.BASE_URL + "/" + imageUrl;
-    S.popupTitleEl.textContent = title;
-    S.popupDescEl.textContent = desc;
-    S.popupTopEl.classList.remove("hidden");
-    S.popupEl.classList.remove("hidden");
-  }
-
-  function showPopupCom(data) {
-    console.log("[POPUP] showPopupCom", data);
-    const yt1 = data?.link_vid_pitch ?? "#";
-    const yt2 = data?.link_vid_demo ?? "#";
-    const webLink = data?.link_web ?? "#";
-    const repoLink = data?.link_repo ?? "#";
-    
-    S.popupVid1El.src = yt1;
-    S.popupVid2El.src = yt2;
-    S.popupWebLinkEl.href = webLink;
-    S.popupGithubLinkEl.href = repoLink;
-    S.popupComEl.classList.remove("hidden");
-    S.popupEl.classList.remove("hidden");
-
-    if(isLoggedIn) {
-      loginMessage.classList.add("hidden");
-      rateForm.classList.remove("hidden");
-
-      S.selectedProjectId = data.id;
-      const rating = localStorage.getItem(`rating_${data.id}`) || 0;
-      paint(rating, "active");
-    } else {
-      loginMessage.classList.remove("hidden");
-      rateForm.classList.add("hidden");
-    }
-  }
-
-  function closePopup() {
-    S.popupPresentationEl.classList.add("hidden");
-    S.popupRatingEl.classList.add("hidden");
-    S.popupTopEl.classList.add("hidden");
-    S.popupComEl.classList.add("hidden");
-    // reset iframe
-    S.popupVid0El.src = ""; // presentation day
-    S.popupVid1El.src = ""; // pitch deck
-    S.popupVid2El.src = ""; // demo
-    S.popupEl.classList.add("hidden");
-  }
-
-  // function delay(ms) {
-  //   return new Promise(resolve => setTimeout(resolve, ms));
-  // }
-
-  function showTriggerPopup(obj, key) { // !!!
-    console.log("[POPUP] showTriggerPopup", obj, key);
-
-    if (obj.mode === "present") {
-      S.popupVid0El.src = "https://www.youtube.com/embed/TuHMaFgQXsQ";
-      S.popupPresentationEl.classList.remove("hidden");
-      S.popupEl.classList.remove("hidden");
-    } else if (obj.mode === "info") {
-      S.popupOverlayEl.classList.add("show");
-    } else if (obj.mode === "archive") {
-      S.popupRatingContainerEl.innerHTML = "";
-
-      S.loaderEl.classList.remove("hidden");
-
-      Promise.all([isLoggedIn, R.fetchRatings()])
-        .then(() => {
-          R.updateRating();
-        })
-        .catch(err => {
-          console.error(err);
-        })
-        .finally(() => {
-          S.loaderEl.classList.add("hidden");
-        });
-
-      S.popupRatingEl.classList.remove("hidden");
-      S.popupEl.classList.remove("hidden");
-    } else if (obj.mode === "image") {
-      showGallery();
-    }
-
-    // Prioritas 2: cache/database
-    const fromDb = S.getPopupData(obj.tim); // tim == projects.id
-
-    const data =
-      fromDb || {
-        title: `Trigger ${obj.id}`,
-        desc: `Tidak ada data popup untuk ${key}. Tambahkan data DB project.`,
-        imageUrl: "",
-      };
-
-    if (obj.mode === "top") {
-      showPopupProject(data);
-    } else if (obj.mode === "com") {
-      showPopupCom(data);
-    } else {
-      console.warn("[POPUP] Unknown mode", obj.mode);
-    }
-  }
-  // showTriggerPopup({ mode: "archive" }, "archive");
-  // showTriggerPopup({ mode: "com", target: "53", tim: "2" }, "archive");
-
-  function initPopupHandlers() {
-    if (S.popupCloseBtn) S.popupCloseBtn.addEventListener("click", closePopup);
-
-    if (S.popupEl) {
-      S.popupEl.addEventListener("click", (e) => {
-        if (e.target === S.popupEl) closePopup();
-      });
-    }
-  }
-
-  /* =========================================================
-  B) ISO HELPERS
-  ========================================================= */
   function tileSpriteBaseY() {
     return S.TILE_H / 2;
   }
@@ -257,6 +22,11 @@ A) POPUP DATA CACHE (localStorage)
       x: (u - v) * (S.TILE_W / 2) + S.ISO_ORIGIN_X,
       y: (u + v) * (S.TILE_H / 2) + S.ISO_ORIGIN_Y,
     };
+  }
+
+  function gridToFootIso(u, v) {
+    const p = toIsoTiled(u, v);
+    return { x: p.x, y: p.y + tileSpriteBaseY() };
   }
 
   function toGridFromIsoTiled(ix, iy) {
@@ -277,14 +47,14 @@ A) POPUP DATA CACHE (localStorage)
     return { x: du, y: dv };
   }
 
-  /* =========================================================
-  C) CAMERA
-  ========================================================= */
+  /* =========================
+   CAMERA / STAGE
+  ========================= */
+
   function centerCameraOnPlayer() {
     if (!S.player) return;
     const targetX = app.screen.width / 2 + 60;
     const targetY = app.screen.height / 2 + 60;
-
     worldContainer.x = targetX - S.player.x;
     worldContainer.y = targetY - S.player.y;
   }
@@ -294,23 +64,26 @@ A) POPUP DATA CACHE (localStorage)
     app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height);
   }
 
-  /* =========================================================
-  D) OBJECT TRANSFORM (ORTHO -> ISO)
-  ========================================================= */
-  function transformObjectGrid(u, v) {
-    const u2 = S.OBJ_U_LEFT + (u - S.OBJ_U_LEFT) * S.OBJ_U_SCALE_X;
-    const v2 = v + CFG.OBJ_GRID_OFFSET_Y;
-    return { u: u2, v: v2 };
+  /* =========================
+   OBJECT TRANSFORM (ORTHO -> ISO)
+   FIX: objects use grid-center (+0.5) to match player grid center
+  ========================= */
+
+  function orthoPxToGridCenter(px, py) {
+    return { u: px / S.TILE_W + 0.5, v: py / S.TILE_H + 0.5 };
   }
 
-  function orthoPxToGrid(px, py) {
-    return { u: px / S.TILE_W, v: py / S.TILE_H };
+  function transformObjectGrid(u, v) {
+    u = (u - S.OBJ_U_LEFT) * S.OBJ_U_SCALE_X;
+    u += CFG.OBJ_GRID_OFFSET_X || 0;
+    v += CFG.OBJ_GRID_OFFSET_Y || 0;
+    return { u, v };
   }
 
   function orthoPointsToIsoPoints(pointsPx) {
     const yOff = tileSpriteBaseY();
     return pointsPx.map((p) => {
-      const gv0 = orthoPxToGrid(p.x, p.y);
+      const gv0 = orthoPxToGridCenter(p.x, p.y);
       const gv = transformObjectGrid(gv0.u, gv0.v);
       const ip = toIsoTiled(gv.u, gv.v);
       return { x: ip.x, y: ip.y + yOff };
@@ -328,13 +101,56 @@ A) POPUP DATA CACHE (localStorage)
 
   function rebuildObjectIsoPolys() {
     if (!CFG.OBJECTS_ARE_ORTHO) return;
+
     S.collisionRects.forEach((r) => (r.isoPoly = rectOrthoPxToIsoPoly(r)));
     S.triggerRects.forEach((r) => (r.isoPoly = rectOrthoPxToIsoPoly(r)));
+    S.collisionPolys.forEach((p) => (p.isoPoly = orthoPointsToIsoPoints(p.points)));
+    S.triggerPolys.forEach((p) => (p.isoPoly = orthoPointsToIsoPoints(p.points)));
+    S.layerPolys.forEach((p) => (p.isoPoly = orthoPointsToIsoPoints(p.points)));
   }
 
-  /* =========================================================
-  E) COLLISION (circle vs rect/poly)
-  ========================================================= */
+  function computeObjectUTransform() {
+    let minU = Infinity;
+    let maxU = -Infinity;
+
+    const scanRect = (r) => {
+      const u1 = r.x / S.TILE_W;
+      const u2 = (r.x + r.w) / S.TILE_W;
+      minU = Math.min(minU, u1, u2);
+      maxU = Math.max(maxU, u1, u2);
+    };
+
+    S.collisionRects.forEach(scanRect);
+    S.triggerRects.forEach(scanRect);
+
+    const scanPolyList = (arr) => {
+      arr.forEach((poly) => {
+        poly.points.forEach((p) => {
+          const u = p.x / S.TILE_W;
+          minU = Math.min(minU, u);
+          maxU = Math.max(maxU, u);
+        });
+      });
+    };
+    scanPolyList(S.triggerPolys);
+    scanPolyList(S.collisionPolys);
+    scanPolyList(S.layerPolys);
+
+    if (!isFinite(minU) || !isFinite(maxU) || maxU - minU < 1e-6) {
+      S.OBJ_U_LEFT = 0;
+      S.OBJ_U_SCALE_X = 1;
+      return;
+    }
+
+    const targetRightU = S.MAP_W + CFG.OBJ_RIGHT_PAD_U;
+    S.OBJ_U_LEFT = minU;
+    S.OBJ_U_SCALE_X = (targetRightU - minU) / (maxU - minU);
+  }
+
+  /* =========================
+   COLLISION
+  ========================= */
+
   function pointInPolygon(point, polygon) {
     let inside = false;
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -370,142 +186,108 @@ A) POPUP DATA CACHE (localStorage)
     return false;
   }
 
-  function circleIntersectsRect(center, radius, rect) {
-    const closestX = Math.max(rect.x, Math.min(center.x, rect.x + rect.w));
-    const closestY = Math.max(rect.y, Math.min(center.y, rect.y + rect.h));
-    const dx = center.x - closestX;
-    const dy = center.y - closestY;
-    return dx * dx + dy * dy <= radius * radius;
-  }
-
   function hitTestShape(center, radius, shape) {
     if (shape.isoPoly) return circleIntersectsPolygon(center, radius, shape.isoPoly);
 
-    if (shape.w !== undefined) return circleIntersectsRect(center, radius, shape);
+    // legacy rect in screen space (not used if isoPoly exists)
+    if (shape.w !== undefined) {
+      const rect = shape;
+      const closestX = Math.max(rect.x, Math.min(center.x, rect.x + rect.w));
+      const closestY = Math.max(rect.y, Math.min(center.y, rect.y + rect.h));
+      const dx = center.x - closestX;
+      const dy = center.y - closestY;
+      return dx * dx + dy * dy <= radius * radius;
+    }
 
-    // polygon object: shape.points
     const polyPts = CFG.OBJECTS_ARE_ORTHO ? orthoPointsToIsoPoints(shape.points) : shape.points;
     return circleIntersectsPolygon(center, radius, polyPts);
   }
 
   function isBlockedByCollision(center, radius = CFG.HIT_RADIUS) {
-    for (const rect of S.collisionRects) if (hitTestShape(center, radius, rect)) return true;
-    for (const poly of S.collisionPolys) if (hitTestShape(center, radius, poly)) return true;
+    let hit = false;
+
+    for (const rect of S.collisionRects) {
+      const h = hitTestShape(center, radius, rect);
+      if (h) { window.DLOG?.("[BLOCK] rect", { id: rect.id, center, radius }); hit = true; break; }
+    }
+    if (hit) return true;
+
+    for (const poly of S.collisionPolys) {
+      const h = hitTestShape(center, radius, poly);
+      if (h) { window.DLOG?.("[BLOCK] poly", { id: poly.id, center, radius }); return true; }
+    }
     return false;
   }
 
-  /* =========================================================
-  F) GLOW (diamond graphics = clickable layer)
-  ========================================================= */
-  function drawGlowDiamondAtTile(tx, ty, options = {}) {
-    const key = `${tx},${ty}`;
-    if (S.activeGlows.has(key)) return S.activeGlows.get(key);
+  /* =========================
+   TRIGGER HIT / LAYER
+  ========================= */
 
-    const glow = new PIXI.Graphics();
-    const p = toIsoTiled(tx, ty);
-    const baseY = tileSpriteBaseY();
+  function reportHit(key, hit, payload) {
+    const prev = S.hitState.get(key) || false;
+    const props = payload.properties || {};
 
-    const top = { x: p.x, y: p.y + baseY - S.TILE_H / 2 };
-    const right = { x: p.x + S.TILE_W / 2, y: p.y + baseY };
-    const bottom = { x: p.x, y: p.y + baseY + S.TILE_H / 2 };
-    const left = { x: p.x - S.TILE_W / 2, y: p.y + baseY };
+    if (hit && !prev) {
+      // ENTER
+      if (key.startsWith("TRIGGER_")) window.TRIGGER_UI?.handleTriggerEnter?.(props);
 
-    const color = options.color ?? 0x00ffcc;
-
-    glow.clear();
-    for (let i = 10; i >= 1; i--) {
-      glow.lineStyle(i, color, 0.05);
-      glow.moveTo(top.x, top.y);
-      glow.lineTo(right.x, right.y);
-      glow.lineTo(bottom.x, bottom.y);
-      glow.lineTo(left.x, left.y);
-      glow.closePath();
+      if (key.startsWith("LAYER_")) {
+        if (L.entities.zIndex !== 100) L.entities.zIndex = 100;
+      }
     }
-    glow.lineStyle(2, color, 0.95);
-    glow.moveTo(top.x, top.y);
-    glow.lineTo(right.x, right.y);
-    glow.lineTo(bottom.x, bottom.y);
-    glow.lineTo(left.x, left.y);
-    glow.closePath();
 
-    // ✅ interaktif + cursor
-    glow.eventMode = "static";
-    glow.cursor = "pointer";
+    if (!hit && prev) {
+      // EXIT
+      if (key.startsWith("TRIGGER_")) window.TRIGGER_UI?.handleTriggerExit?.(props);
 
-    // penting: polygon hitArea (koordinat LOKAL glow)
-    glow.hitArea = new PIXI.Polygon([
-      top.x - glow.x, top.y - glow.y,
-      right.x - glow.x, right.y - glow.y,
-      bottom.x - glow.x, bottom.y - glow.y,
-      left.x - glow.x, left.y - glow.y,
-    ]);
+      if (key.startsWith("LAYER_")) {
+        if (L.entities.zIndex !== 400) L.entities.zIndex = 400;
+      }
+    }
 
-    glow.on("pointertap", (e) => {
-      e.stopPropagation();
-      console.log("[GLOW CLICK]", key);
-      // kalau kamu mau: showPopupProject dari data tile/gid tertentu, bisa ditambah di options
-      if (options.onClick) options.onClick({ tx, ty, key });
-    });
-
-    glow.zIndex = bottom.y;
-    L.glow.addChild(glow);
-
-    S.activeGlows.set(key, glow);
-    return glow;
+    S.hitState.set(key, hit);
   }
 
-  function removeGlowDiamondAtTile(tx, ty) {
-    const key = `${tx},${ty}`;
-    const glow = S.activeGlows.get(key);
-    if (!glow) return;
-    glow.removeFromParent();
-    glow.destroy(true);
-    S.activeGlows.delete(key);
+  function getPlayerFootPoint() {
+    return { x: S.player.x, y: S.player.y };
   }
 
-  /* =========================================================
-  G) DEBUG: "elemen mana yang diinteraksi"
-  ========================================================= */
-  function installInteractionDebugger() {
-    // Capturing: lihat event paling awal
-    // app.stage.on("pointerdown", (e) => {
-    //   const t = e.target;
-    //   console.log("[INTERACT] pointerdown target =", {
-    //     target: t?.constructor?.name,
-    //     name: t?.name,
-    //     parent: t?.parent?.constructor?.name,
-    //   });
-    // });
+  function checkAllObjectHits() {
+    const c = getPlayerFootPoint();
+    const r = CFG.HIT_RADIUS;
+
+    S.collisionRects.forEach((o) => reportHit(`COLLISION_RECT#${o.id}`, hitTestShape(c, r, o), o));
+    S.triggerRects.forEach((o) => reportHit(`TRIGGER_RECT#${o.id}`, hitTestShape(c, r, o), o));
+
+    S.collisionPolys.forEach((o) => reportHit(`COLLISION_POLY#${o.id}`, hitTestShape(c, r, o), o));
+    S.triggerPolys.forEach((o) => reportHit(`TRIGGER_POLY#${o.id}`, hitTestShape(c, r, o), o));
+
+    S.layerPolys.forEach((o) => reportHit(`LAYER_POLY#${o.id}`, hitTestShape(c, r, o), o));
   }
 
-  /* =========================================================
-  H) PLAYER helpers
-  ========================================================= */
+  /* =========================
+   PLAYER
+  ========================= */
+
   function clampPlayerToMap() {
-    S.playerPos.x = Math.max(
-      CFG.MOVE_MARGIN,
-      Math.min(S.MAP_W - 1 - CFG.MOVE_MARGIN, S.playerPos.x)
-    );
-    S.playerPos.y = Math.max(
-      CFG.MOVE_MARGIN,
-      Math.min(S.MAP_H - 1 - CFG.MOVE_MARGIN, S.playerPos.y)
-    );
+    S.playerPos.x = Math.max(CFG.MOVE_MARGIN, Math.min(S.MAP_W - 1 - CFG.MOVE_MARGIN, S.playerPos.x));
+    S.playerPos.y = Math.max(CFG.MOVE_MARGIN, Math.min(S.MAP_H - 1 - CFG.MOVE_MARGIN, S.playerPos.y));
   }
 
   function updatePlayerPosition() {
     if (!S.player) return;
-    // console.log("[PLAYER] updatePlayerPosition", S.playerPos);
-    const iso = toIsoTiled(S.playerPos.x, S.playerPos.y);
-    S.player.x = iso.x;
-    S.player.y = iso.y + tileSpriteBaseY();
-    S.player.zIndex = S.player.y + S.playerBaseZ;
+    const foot = gridToFootIso(S.playerPos.x, S.playerPos.y);
+    S.player.x = foot.x;
+    S.player.y = foot.y;
+    S.player.zIndex = S.player.y + (S.playerBaseZ || 0);
 
-    // debug hitbox
-    hitboxGraphic.clear();
-    hitboxGraphic.lineStyle(1, 0x00ff00, 1);
-    hitboxGraphic.beginFill(0x00ff00, 0.25);
-    hitboxGraphic.drawEllipse(S.player.x, S.player.y, 10, 6);
-    hitboxGraphic.endFill();
+    if (hitboxGraphic) {
+      hitboxGraphic.clear();
+      hitboxGraphic.lineStyle(1, 0x00ff00, 1);
+      hitboxGraphic.beginFill(0x00ff00, 0.25);
+      hitboxGraphic.drawEllipse(S.player.x, S.player.y, 10, 6);
+      hitboxGraphic.endFill();
+    }
   }
 
   function directionFromAngle(angleDeg) {
@@ -528,9 +310,12 @@ A) POPUP DATA CACHE (localStorage)
     S.currentDir = dir || S.currentDir;
     S.currentIsLeft = isLeft ?? S.currentIsLeft;
 
-    const sx = (S.currentIsLeft ? -1 : 1) * CFG.PLAYER_SCALE;
-    S.player.scale.x = sx;
+    S.player.scale.x = (S.currentIsLeft ? -1 : 1) * CFG.PLAYER_SCALE;
     S.player.scale.y = CFG.PLAYER_SCALE;
+
+    // sound module can react via S.isWalking if you want
+    if (moving && !S.isWalking) { window.SOUND?.loopSound("walk"); S.isWalking = true; }
+    if (!moving && S.isWalking) { window.SOUND?.stopSound("walk"); S.isWalking = false; }
 
     if (moving) {
       const target = S.animations[S.currentDir];
@@ -542,8 +327,7 @@ A) POPUP DATA CACHE (localStorage)
       }
     } else {
       const idle = S.idleFrames[S.currentDir];
-      if (S.player.textures.length !== 1 || S.player.textures[0] !== idle)
-        S.player.textures = [idle];
+      if (S.player.textures.length !== 1 || S.player.textures[0] !== idle) S.player.textures = [idle];
       S.player.gotoAndStop(0);
     }
   }
@@ -559,9 +343,9 @@ A) POPUP DATA CACHE (localStorage)
     const FRAME_W = SHEET_WIDTH / FRAME_COLS;
     const FRAME_H = SHEET_HEIGHT / FRAME_ROWS;
 
-    const frames = [];
+    const frames = Array.from({ length: FRAME_ROWS }, () => Array(FRAME_COLS));
+
     for (let row = 0; row < FRAME_ROWS; row++) {
-      frames[row] = [];
       for (let col = 0; col < FRAME_COLS; col++) {
         const rect = new PIXI.Rectangle(col * FRAME_W, row * FRAME_H, FRAME_W, FRAME_H);
         frames[row][col] = new PIXI.Texture(baseTexture, rect);
@@ -575,7 +359,6 @@ A) POPUP DATA CACHE (localStorage)
       upSide: frames[3].slice(1),
       up: frames[4].slice(1),
     };
-
     S.idleFrames = {
       down: frames[0][0],
       downSide: frames[1][0],
@@ -585,28 +368,22 @@ A) POPUP DATA CACHE (localStorage)
     };
 
     S.player = new PIXI.AnimatedSprite(S.animations.down);
-
-    // ✅ anchor center-bottom
     S.player.anchor.set(0.5, 1);
-
-    // ✅ tampil 3x lebih kecil, tapi texture tetap high-res
     S.player.scale.set(CFG.PLAYER_SCALE);
-
     S.player.animationSpeed = 0.12;
     S.player.play();
 
-    // ✅ agar player tidak menghalangi interaksi objek lain
     S.player.eventMode = "passive";
     S.player.interactiveChildren = false;
-    S.player.cursor = "default";
 
     L.entities.addChild(S.player);
     updatePlayerPosition();
   }
 
-  /* =========================================================
-  I) TMX / TSX LOAD
-  ========================================================= */
+  /* =========================
+   TMX LOADER
+  ========================= */
+
   async function fetchText(url) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Fetch failed ${url}: ${res.status}`);
@@ -639,7 +416,6 @@ A) POPUP DATA CACHE (localStorage)
     const tilesetEl = tsxDoc.querySelector("tileset");
     const columnsAttr = tilesetEl.getAttribute("columns");
 
-    // MODE A: atlas
     const atlasImageEl = tsxDoc.querySelector("tileset > image");
     if (atlasImageEl && columnsAttr) {
       const columns = Number(columnsAttr);
@@ -661,21 +437,16 @@ A) POPUP DATA CACHE (localStorage)
       return texturesByLocalId;
     }
 
-    // MODE B: collection-of-images
     const texturesByLocalId = [];
     const tileEls = [...tsxDoc.querySelectorAll("tileset > tile")];
-
-    await Promise.all(
-      tileEls.map(async (t) => {
-        const id = Number(t.getAttribute("id"));
-        const img = t.querySelector("image");
-        if (!img) return;
-        const url = baseDir + img.getAttribute("source");
-        const tex = await PIXI.Assets.load(url);
-        texturesByLocalId[id] = tex;
-      })
-    );
-
+    await Promise.all(tileEls.map(async (t) => {
+      const id = Number(t.getAttribute("id"));
+      const img = t.querySelector("image");
+      if (!img) return;
+      const url = baseDir + img.getAttribute("source");
+      const tex = await PIXI.Assets.load(url);
+      texturesByLocalId[id] = tex;
+    }));
     return texturesByLocalId;
   }
 
@@ -687,7 +458,6 @@ A) POPUP DATA CACHE (localStorage)
     S.layerPolys = [];
 
     const groups = [...tmxDoc.querySelectorAll("objectgroup")];
-
     for (const og of groups) {
       const name = (og.getAttribute("name") || "").toLowerCase();
       const objs = [...og.querySelectorAll("object")];
@@ -702,15 +472,10 @@ A) POPUP DATA CACHE (localStorage)
 
         const polyEl = o.querySelector("polygon");
         if (polyEl) {
-          const points = polyEl
-            .getAttribute("points")
-            .trim()
-            .split(" ")
-            .map((pair) => {
-              const [px, py] = pair.split(",").map(Number);
-              return { x: ox + px, y: oy + py };
-            });
-
+          const points = polyEl.getAttribute("points").trim().split(" ").map((pair) => {
+            const [px, py] = pair.split(",").map(Number);
+            return { x: ox + px, y: oy + py };
+          });
           const pack = { id, points, properties };
 
           if (name === "trigger") S.triggerPolys.push(pack);
@@ -726,54 +491,6 @@ A) POPUP DATA CACHE (localStorage)
     }
   }
 
-  function computeObjectUTransform() {
-    let minU = Infinity;
-    let maxU = -Infinity;
-
-    const scanRect = (r) => {
-      const u1 = r.x / S.TILE_W;
-      const u2 = (r.x + r.w) / S.TILE_W;
-      minU = Math.min(minU, u1, u2);
-      maxU = Math.max(maxU, u1, u2);
-    };
-
-    S.collisionRects.forEach(scanRect);
-    S.triggerRects.forEach(scanRect);
-
-    const scanPolyList = (arr) => {
-      arr.forEach((poly) => {
-        poly.points.forEach((p) => {
-          const u = p.x / S.TILE_W;
-          minU = Math.min(minU, u);
-          maxU = Math.max(maxU, u);
-        });
-      });
-    };
-
-    scanPolyList(S.triggerPolys);
-    scanPolyList(S.collisionPolys);
-    scanPolyList(S.layerPolys);
-
-    if (!isFinite(minU) || !isFinite(maxU) || maxU - minU < 1e-6) {
-      S.OBJ_U_LEFT = 0;
-      S.OBJ_U_SCALE_X = 1;
-      return;
-    }
-
-    const targetRightU = S.MAP_W + CFG.OBJ_RIGHT_PAD_U;
-    S.OBJ_U_LEFT = minU;
-    S.OBJ_U_SCALE_X = (targetRightU - minU) / (maxU - minU);
-
-    console.log("[OBJ U TRANSFORM]", {
-      OBJ_U_LEFT: S.OBJ_U_LEFT,
-      OBJ_U_SCALE_X: S.OBJ_U_SCALE_X,
-      minU,
-      maxU,
-      MAP_W: S.MAP_W,
-      targetRightU,
-    });
-  }
-
   function clearMapLayers() {
     L.background.removeChildren();
     L.triggerTile.removeChildren();
@@ -781,16 +498,9 @@ A) POPUP DATA CACHE (localStorage)
     L.foreground.removeChildren();
     L.objectsDebug.removeChildren();
     L.markers.removeChildren();
-
-    // destroy glow
-    for (const g of S.activeGlows.values()) {
-      g.removeFromParent();
-      g.destroy(true);
-    }
-    S.activeGlows.clear();
     L.glow.removeChildren();
 
-    hitboxGraphic.clear();
+    hitboxGraphic?.clear();
     S.tileSpritesByGid.clear();
   }
 
@@ -820,11 +530,9 @@ A) POPUP DATA CACHE (localStorage)
 
     const texturesByLocalId = await buildTexturesFromTSX(tsxDoc, baseDir);
 
-    // ✅ TAMBAHKAN: Simpan untuk digunakan openDoor()
     S.tilesetTextures = texturesByLocalId;
     S.tilesetFirstGid = firstGid;
 
-    // render layers
     const layerEls = [...tmxDoc.querySelectorAll("layer")];
     for (const layerEl of layerEls) {
       const name = layerEl.getAttribute("name");
@@ -832,15 +540,11 @@ A) POPUP DATA CACHE (localStorage)
       const gids = parseCSV(csv);
 
       const target =
-        name === "background"
-          ? L.background
-          : name === "triggerTile"
-            ? L.triggerTile
-            : name === "foreground"
-              ? L.foreground
-              : name === "mostfront"
-                ? L.mostfront
-                : L.background;
+        name === "background" ? L.background :
+          name === "triggerTile" ? L.triggerTile :
+            name === "foreground" ? L.foreground :
+              name === "mostfront" ? L.mostfront :
+                L.background;
 
       for (let row = 0; row < S.MAP_H; row++) {
         for (let col = 0; col < S.MAP_W; col++) {
@@ -852,7 +556,6 @@ A) POPUP DATA CACHE (localStorage)
           if (!tex) continue;
 
           const p = toIsoTiled(col, row);
-
           const sp = new PIXI.Sprite(tex);
           sp.anchor.set(0.5, 1);
           sp.x = p.x;
@@ -867,313 +570,22 @@ A) POPUP DATA CACHE (localStorage)
       }
     }
 
-    // objects
     parseObjectGroups(tmxDoc);
     computeObjectUTransform();
     rebuildObjectIsoPolys();
 
-    // spawn center
     S.playerPos.x = (S.MAP_W - 1) / 2;
     S.playerPos.y = (S.MAP_H - 1) / 2;
-
-    console.log("✅ World ready (map built)", {
-      MAP_W: S.MAP_W,
-      MAP_H: S.MAP_H,
-      TILE_W: S.TILE_W,
-      TILE_H: S.TILE_H,
-      ISO_ORIGIN_X: S.ISO_ORIGIN_X,
-      ISO_ORIGIN_Y: S.ISO_ORIGIN_Y,
-    });
   }
 
-  /* =========================================================
-  J) ENTER/EXIT HIT TRIGGER
-  ========================================================= */
-  function glowTargetFromProps(props) {
-    console.log("[TRIGGER] glowTargetFromProps", props);
-    if (!props || props.target === undefined) return;
+  /* =========================
+   INPUT VECTOR
+  ========================= */
 
-    const gid = Number(props.target);
-    const sprites = S.tileSpritesByGid.get(gid);
-
-    if (!sprites || sprites.length === 0) {
-      console.warn("[GLOW] No tile sprite found for GID", gid);
-      return;
-    }
-
-    // simpan referensi aktif (untuk remove nanti)
-    if (!S.activeTriggerGlow) S.activeTriggerGlow = [];
-
-    sprites.forEach((sp) => {
-      // jangan double-glow
-      if (sp.__glowFilter) return;
-
-      // pastikan tile tidak makan event
-      sp.eventMode = "none";
-      sp.cursor = null;
-
-      const glow = new PIXI.filters.GlowFilter({
-        distance: 20,              // ketebalan glow
-        outerStrength: 2,
-        innerStrength: 0,
-        color: 0x00ffff,
-        quality: 0.5,
-      });
-
-      // animasi pulse
-      glow.__pulse = () => {
-        glow.outerStrength =
-          2 + Math.sin(performance.now() * 0.004) * 1.5;
-      };
-
-      sp.filters = sp.filters ? [...sp.filters, glow] : [glow];
-      sp.__glowFilter = glow;
-
-      app.ticker.add(glow.__pulse);
-
-      S.activeTriggerGlow.push(sp);
-    });
-  }
-
-  function removeGlowTarget() {
-    if (!S.activeTriggerGlow) return;
-
-    S.activeTriggerGlow.forEach((sp) => {
-      const glow = sp.__glowFilter;
-      if (!glow) return;
-
-      app.ticker.remove(glow.__pulse);
-
-      sp.filters = (sp.filters || []).filter((f) => f !== glow);
-      delete sp.__glowFilter;
-    });
-
-    S.activeTriggerGlow.length = 0;
-  }
-
-
-  function getTileCenterFromTarget(props) {
-    // Priority 1: by GID (target)
-    const gid = props?.target;
-    if (gid !== undefined && S.tileSpritesByGid.has(Number(gid))) {
-      const list = S.tileSpritesByGid.get(Number(gid));
-      if (list && list.length) {
-        // sprite tile anchor (0.5,1): x,y = bottom center tile
-        // center tile = naik sedikit half tile height
-        const sp = list[0];
-        return { x: sp.x, y: sp.y - (S.TILE_H / 2) };
-      }
-    }
-
-    // Priority 2: by tile coord
-    if (props?.targetTileX !== undefined && props?.targetTileY !== undefined) {
-      const p = toIsoTiled(Number(props.targetTileX), Number(props.targetTileY));
-      return { x: p.x, y: p.y + tileSpriteBaseY() - (S.TILE_H / 2) };
-    }
-
-    return null;
-  }
-
-  function showTriggerButton(props) {
-    const center = getTileCenterFromTarget(props);
-    if (center) {
-      addActionButtonAt(center.x, center.y, () => {
-        // onClick button -> show popup
-        showTriggerPopup(props, props.key);
-      });
-    }
-  }
-
-  function removeTriggerButton() {
-    if (S.activeTriggerButton) {
-      S.activeTriggerButton.removeFromParent();
-      S.activeTriggerButton.destroy(true);
-      S.activeTriggerButton = null;
-    }
-  }
-
-  function addActionButtonAt(x, y, onClick) {
-    // Remove existing first
-    if (S.activeTriggerButton) {
-      S.activeTriggerButton.removeFromParent();
-      S.activeTriggerButton.destroy(true);
-      S.activeTriggerButton = null;
-    }
-
-    const btn = new PIXI.Graphics();
-    btn.name = "TriggerActionButton";
-
-    // button style (simple game UI)
-    const r = 14;
-    btn.beginFill(0x00ffcc, 0.95);
-    btn.drawRoundedRect(-26, -16, 52, 32, 10);
-    btn.endFill();
-
-    btn.lineStyle(2, 0x001a1a, 0.9);
-    btn.moveTo(-8, 0);
-    btn.lineTo(8, 0);
-    btn.moveTo(0, -8);
-    btn.lineTo(0, 8);
-
-    // place
-    btn.x = x;
-    btn.y = y;
-
-    // ensure above the tile
-    btn.zIndex = y + 9999;
-
-    // interaction
-    btn.eventMode = "static";
-    btn.cursor = "pointer";
-    btn.on("pointertap", (e) => {
-      e.stopPropagation();
-      onClick?.();
-    });
-
-    // Put in L.glow so it's above map layers
-    L.glow.addChild(btn);
-
-    S.activeTriggerButton = btn;
-    return btn;
-  }
-
-  async function openDoor(props) {
-    if (!props.target || !props.change) return;
-
-    // props.target = tile ID di layer (contoh: 22)
-    // Ini adalah GID (Global ID) = firstGid + localId
-    const targetGid = Number(props.target);
-    // console.log("[SPRITE] openDoor", targetGid, props.change);
-    const list = S.tileSpritesByGid.get(targetGid);
-    // console.log("[SPRITE] list", list);
-
-    if (!list || !list.length) {
-      console.warn(`[SPRITE] No sprites found for GID ${targetGid}`);
-      return;
-    }
-
-    try {
-      // props.change = tile ID tujuan (contoh: 21 untuk tile id="20")
-      // Karena di CSV: tile id + 1, maka GID = firstGid + tileId
-      const changeGid = Number(props.change);
-
-      // Hitung localId dari changeGid
-      const changeLocalId = changeGid - S.tilesetFirstGid;
-
-      // Ambil texture dari tileset yang sudah di-load
-      const newTexture = S.tilesetTextures[changeLocalId];
-
-      if (!newTexture) {
-        console.warn(`[SPRITE] Texture not found for GID ${changeGid} (localId: ${changeLocalId})`);
-        return;
-      }
-
-      // Apply texture ke semua sprite dengan target GID
-      list.forEach((sp) => {
-        const oldTexture = sp.texture;
-        sp.texture = newTexture;
-
-        console.log(`[SPRITE] Changed sprite at (${sp.x}, ${sp.y})`);
-      });
-
-      // console.log(`[SPRITE] ✅ Changed ${list.length} sprites from GID ${targetGid} to GID ${changeGid}`);
-      S.doorOpen = true; 
-    } catch (err) {
-      console.error(`[SPRITE] Failed to change sprite:`, err);
-    }
-  }
-
-  function reportHit(key, hit, payload) {
-    const prev = S.hitState.get(key) || false;
-    const props = payload.properties || {};
-
-    // ENTER
-    if (hit && !prev) {
-      console.log(`✅ ENTER ${key}`, props);
-
-      // event popup
-      if (key.startsWith("TRIGGER_RECT#") || key.startsWith("TRIGGER_POLY#")) {
-        // case: door open
-        if (props?.mode === "door") {
-          // console.log("[TRIGGER] door open");
-          openDoor(props);
-          // return;
-        } else {
-          // case: popup
-          glowTargetFromProps(props);
-          showTriggerButton(props); // tombol di tengah tile
-        }
-      }
-
-      // change player layer
-      if (key.startsWith("LAYER_POLY#")) {
-        // console.log("[LAYER] layerPoly hit");
-        if (L.entities.zIndex === 100) return;
-        L.entities.zIndex = 100;
-      }
-    }
-
-    // EXIT
-    if (!hit && prev) {
-      // console.log(`⬅️ EXIT ${key}`, props);
-
-      if (key.startsWith("TRIGGER_RECT#") || key.startsWith("TRIGGER_POLY#")) {
-        removeGlowTarget();
-        removeTriggerButton();
-        closePopup();
-        if(S.doorOpen) {
-          // console.log("[TRIGGER] door close");
-          openDoor({change: '22', target: '22'});
-          S.doorOpen = false;
-        }
-      }
-
-      // change player layer
-      if (key.startsWith("LAYER_POLY#")) {
-        // console.log("[LAYER] layerPoly exit");
-        if (L.entities.zIndex === 400) return;
-        L.entities.zIndex = 400;
-      }
-    }
-
-    S.hitState.set(key, hit);
-  }
-
-  function getPlayerFootPoint() {
-    return { x: S.player.x, y: S.player.y };
-  }
-
-  function checkAllObjectHits() {
-    const c = getPlayerFootPoint();
-    const r = CFG.HIT_RADIUS;
-
-    S.collisionRects.forEach((obj) => // must not enter
-      reportHit(`COLLISION_RECT#${obj.id}`, hitTestShape(c, r, obj), obj)
-    );
-    S.triggerRects.forEach((obj) => // event triggered
-      reportHit(`TRIGGER_RECT#${obj.id}`, hitTestShape(c, r, obj), obj)
-    );
-
-    S.collisionPolys.forEach((obj) => // must not enter
-      reportHit(`COLLISION_POLY#${obj.id}`, hitTestShape(c, r, obj), obj)
-    );
-    S.triggerPolys.forEach((obj) => // event triggered
-      reportHit(`TRIGGER_POLY#${obj.id}`, hitTestShape(c, r, obj), obj)
-    );
-    S.layerPolys.forEach((obj) => // z-index player change
-      reportHit(`LAYER_POLY#${obj.id}`, hitTestShape(c, r, obj), obj)
-    );
-  }
-
-  /* =========================================================
-  K) INPUT VECTOR (screen-based)
-  ========================================================= */
   function computeScreenVectorFromInput() {
     if (!S.inputEnabled) return { sx: 0, sy: 0 };
 
-    let sx = 0,
-      sy = 0;
-
+    let sx = 0, sy = 0;
     if (S.keys["arrowup"] || S.keys["w"]) sy -= 1;
     if (S.keys["arrowdown"] || S.keys["s"]) sy += 1;
     if (S.keys["arrowleft"] || S.keys["a"]) sx -= 1;
@@ -1192,116 +604,359 @@ A) POPUP DATA CACHE (localStorage)
       const distIso = Math.hypot(sx, sy);
       if (distIso < 2) {
         S.pointerTarget = null;
-        sx = 0;
-        sy = 0;
+        sx = 0; sy = 0;
       } else {
-        sx /= distIso;
-        sy /= distIso;
+        sx /= distIso; sy /= distIso;
       }
     }
 
-    // normalize diagonal keyboard
     if (usingKeyboard) {
       const len = Math.hypot(sx, sy);
-      if (len > 0) {
-        sx /= len;
-        sy /= len;
-      }
+      if (len > 0) { sx /= len; sy /= len; }
     }
-
     return { sx, sy };
   }
 
-
   function resetAllInputs() {
-    // keyboard
     Object.keys(S.keys).forEach((k) => (S.keys[k] = false));
-
-    // pointer
     S.pointerTarget = null;
-
-    // marker
     L.markers.removeChildren();
   }
 
   function setInputEnabled(enabled) {
     S.inputEnabled = enabled;
-
-    if (!enabled) {
-      resetAllInputs();
-    }
+    if (!enabled) resetAllInputs();
   }
 
-  // stop movement
   function pauseGame() {
-    gamePaused = true;
+    S.gamePaused = true;
     setInputEnabled(false);
+    window.SOUND?.stopSound("walk");
+    S.isWalking = false;
   }
 
   function resumeGame() {
-    gamePaused = false;
+    S.gamePaused = false;
     setInputEnabled(true);
-
-    // reset timer supaya dt tidak loncat
-    lastUpdate = Date.now();
+    S.lastUpdate = Date.now();
   }
 
   window.addEventListener("blur", pauseGame);
   window.addEventListener("focus", resumeGame);
+  document.addEventListener("visibilitychange", () => document.hidden ? pauseGame() : resumeGame());
 
-  // lebih akurat untuk tab switching
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) pauseGame();
-    else resumeGame();
-  });
+  /* =========================
+   POPUP DATA access (helper exposes getter only)
+  ========================= */
+  S.popupDataProjects = [];
+
+  async function initPopupData({ force = false } = {}) {
+    if (!force) {
+      const cached = window.POPUP?.loadPopupDataFromStorage?.();
+      if (cached) {
+        S.popupDataProjects = cached;
+        return cached;
+      }
+    }
+    try {
+      const fresh = await window.POPUP?.fetchPopupData?.(S.BASE_URL);
+      S.popupDataProjects = fresh || [];
+      return S.popupDataProjects;
+    } catch (e) {
+      console.error(e);
+      S.popupDataProjects = [];
+      return [];
+    }
+  }
+
+  function getPopupDataByProjectId(id) {
+    return window.POPUP?.getPopupDataById?.(S.popupDataProjects, id) || null;
+  }
+
+  // VECTOR PLAYER TANGENT SLIDING
+  // ===== Vector helpers
+  function vSub(a, b) { return { x: a.x - b.x, y: a.y - b.y }; }
+  function vAdd(a, b) { return { x: a.x + b.x, y: a.y + b.y }; }
+  function vMul(a, s) { return { x: a.x * s, y: a.y * s }; }
+  function vDot(a, b) { return a.x * b.x + a.y * b.y; }
+  function vLen(a) { return Math.hypot(a.x, a.y); }
+  function vNorm(a) {
+    const L = vLen(a);
+    return L > 1e-9 ? { x: a.x / L, y: a.y / L } : { x: 0, y: 0 };
+  }
+
+  // distance + closest point to segment
+  function closestPointOnSegment(p, a, b) {
+    const ab = vSub(b, a);
+    const t = Math.max(0, Math.min(1, vDot(vSub(p, a), ab) / (vDot(ab, ab) || 1)));
+    return vAdd(a, vMul(ab, t));
+  }
+
+  function nearestEdgeNormalAndTangent(point, poly) {
+    // return edge (a,b) closest to point, plus outward-ish normal (not perfect, but ok for slide)
+    let best = { dist: Infinity, a: null, b: null, cp: null };
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i];
+      const b = poly[(i + 1) % poly.length];
+      const cp = closestPointOnSegment(point, a, b);
+      const d = vLen(vSub(point, cp));
+      if (d < best.dist) {
+        best = { dist: d, a, b, cp };
+      }
+    }
+
+    const edge = vSub(best.b, best.a);
+    const t = vNorm(edge); // tangent
+    // 2D normal candidates
+    const n1 = vNorm({ x: -t.y, y: t.x });
+    const n2 = vMul(n1, -1);
+
+    // pilih normal yang "mengarah" dari edge ke point (lebih masuk akal untuk collision surface)
+    const toP = vSub(point, best.cp);
+    const n = (vDot(toP, n1) >= 0) ? n1 : n2;
+
+    return { t, n, cp: best.cp, dist: best.dist };
+  }
+
+  // cari collision polygon yang sedang ditabrak (yang paling dekat edge-nya)
+  function findBlockingSurface(point, radius) {
+    let best = null;
+
+    const consider = (shape) => {
+      const poly = shape.isoPoly;
+      if (!poly) return;
+
+      // hanya ambil yang benar-benar intersect
+      if (!circleIntersectsPolygon(point, radius, poly)) return;
+
+      const surf = nearestEdgeNormalAndTangent(point, poly);
+      if (!best || surf.dist < best.dist) {
+        best = { ...surf, poly, shape };
+      }
+    };
+
+    S.collisionRects.forEach(consider);
+    S.collisionPolys.forEach(consider);
+
+    if (!best) {
+      window.DLOG?.("[SLIDE] findBlockingSurface: no intersecting isoPoly at point", {
+        point: { x: Number(point.x.toFixed(2)), y: Number(point.y.toFixed(2)) },
+        radius,
+        rectCount: S.collisionRects.length,
+        polyCount: S.collisionPolys.length,
+        // penting: apakah isoPoly ada?
+        rectIsoPolyMissing: S.collisionRects.filter(r => !r.isoPoly).length,
+        polyIsoPolyMissing: S.collisionPolys.filter(p => !p.isoPoly).length,
+      });
+    }
+
+    return best; // {t,n,cp,dist,poly,shape} | null
+  }
+
+  /**
+   * Attempt movement with sliding.
+   * - desiredGridDelta: {du,dv} in GRID space (already normalized+scaled by speed*dt)
+   * - returns newPos or null (if can't move)
+   */
+  function tryMoveWithSliding(prevPos, desiredGridDelta) {
+    // convert desired grid delta to iso delta at current tile scale
+    // We can approximate iso delta by mapping two nearby grid points and subtracting.
+    const footPrev = gridToFootIso(prevPos.x, prevPos.y);
+    const footNextDesired = gridToFootIso(prevPos.x + desiredGridDelta.du, prevPos.y + desiredGridDelta.dv);
+    const v = vSub(footNextDesired, footPrev); // desired velocity in iso space (pixels)
+
+    window.DLOG?.("[SLIDE] attempt", {
+      prevPos: { x: Number(prevPos.x.toFixed(3)), y: Number(prevPos.y.toFixed(3)) },
+      desiredGridDelta: { du: Number(desiredGridDelta.du.toFixed(4)), dv: Number(desiredGridDelta.dv.toFixed(4)) },
+      vIso: { x: Number(v.x.toFixed(2)), y: Number(v.y.toFixed(2)) },
+    });
+
+    // full move attempt
+    const nextPos = { x: prevPos.x + desiredGridDelta.du, y: prevPos.y + desiredGridDelta.dv };
+    const footNext = gridToFootIso(nextPos.x, nextPos.y);
+
+    const blockedFull = isBlockedByCollision(footNext, CFG.HIT_RADIUS);
+
+    window.DLOG?.("[SLIDE] fullMoveCheck", {
+      footPrev: { x: Number(footPrev.x.toFixed(2)), y: Number(footPrev.y.toFixed(2)) },
+      footNext: { x: Number(footNext.x.toFixed(2)), y: Number(footNext.y.toFixed(2)) },
+      radius: CFG.HIT_RADIUS,
+      blockedFull,
+    });
+
+    if (!blockedFull) return nextPos;
+
+    // collision: find best surface to slide on using CURRENT foot point (or predicted point).
+    // ✅ cari surface di titik yang memang blocked (footNext), fallback ke midpoint, lalu prev
+    const mid = { x: (footPrev.x + footNext.x) / 2, y: (footPrev.y + footNext.y) / 2 };
+
+    let surface =
+      findBlockingSurface(footNext, CFG.HIT_RADIUS) ||
+      findBlockingSurface(mid, CFG.HIT_RADIUS) ||
+      findBlockingSurface(footPrev, CFG.HIT_RADIUS);
+
+    window.DLOG?.("[SLIDE] surfaceSearchPoints", {
+      footPrev: { x: +footPrev.x.toFixed(2), y: +footPrev.y.toFixed(2) },
+      mid: { x: +mid.x.toFixed(2), y: +mid.y.toFixed(2) },
+      footNext: { x: +footNext.x.toFixed(2), y: +footNext.y.toFixed(2) },
+      found: !!surface,
+    });
+
+    if (!surface) {
+      window.DLOG?.("[SLIDE] surface=NULL even after next/mid/prev (check isoPoly sync?)");
+      return null;
+    }
 
 
-  /* =========================================================
-  EXPOSE HELPERS
-  ========================================================= */
+    window.DLOG?.("[SLIDE] surface", surface ? {
+      dist: Number(surface.dist.toFixed(3)),
+      cp: { x: Number(surface.cp.x.toFixed(2)), y: Number(surface.cp.y.toFixed(2)) },
+      n: { x: Number(surface.n.x.toFixed(3)), y: Number(surface.n.y.toFixed(3)) },
+      t: { x: Number(surface.t.x.toFixed(3)), y: Number(surface.t.y.toFixed(3)) },
+      shapeId: surface.shape?.id ?? null,
+    } : null);
+
+    const vHat = vNorm(v);
+    const nHat = surface.n;
+    const tHat = surface.t;
+
+    // how "oblique" is impact? (0 = perpendicular, 1 = parallel/glancing)
+    const cosTheta = Math.abs(vDot(vHat, nHat)); // 1 = perpendicular, 0 = parallel
+    const glance = 1 - cosTheta; // 0..1
+
+    // project velocity onto tangent
+    const vt = vDot(v, tHat);
+
+    // sliding speed based on obtuse portion: amplify when glancing
+    // tweakable: power curve makes more “sticky” on near-perpendicular hits
+    const SLIDE_POWER = 1.35;         // >1 => lebih pelan saat hampir tegak lurus
+    const SLIDE_MAX = 1.0;            // clamp factor
+    const slideFactor = Math.min(SLIDE_MAX, Math.pow(Math.max(0, glance), SLIDE_POWER));
+
+    window.DLOG?.("[SLIDE] angle", {
+      cosTheta: Number(cosTheta.toFixed(4)),
+      glance: Number(glance.toFixed(4)), // ini “nominal sudut tumpul” versi kita
+      vt: Number(vt.toFixed(3)),
+      slideFactor: Number(slideFactor.toFixed(3)),
+    });
+
+    const vSlide = vMul(tHat, vt * slideFactor);
+
+    // convert iso slide vector back to grid delta by small-step numeric inversion:
+    // We'll move in iso space and map back to grid using toGridFromIsoTiled.
+    const footSlideTarget = vAdd(footPrev, vSlide);
+
+    window.DLOG?.("[SLIDE] tangentTarget", {
+      vSlide: { x: Number(vSlide.x.toFixed(2)), y: Number(vSlide.y.toFixed(2)) },
+      footSlideTarget: { x: Number(footSlideTarget.x.toFixed(2)), y: Number(footSlideTarget.y.toFixed(2)) },
+    });
+
+    // Convert iso foot -> grid (need remove baseY)
+    const gridSlide = toGridFromIsoTiled(footSlideTarget.x, footSlideTarget.y - tileSpriteBaseY());
+
+    window.DLOG?.("[SLIDE] tangentTargetGrid", {
+      tangentTargetGrid: { x: +gridSlide.x.toFixed(3), y: +gridSlide.y.toFixed(3) },
+      prevGrid: { x: +prevPos.x.toFixed(3), y: +prevPos.y.toFixed(3) },
+      deltaGrid: { du: +(gridSlide.x - prevPos.x).toFixed(4), dv: +(gridSlide.y - prevPos.y).toFixed(4) },
+    });
+
+    // Use delta in grid from prev to slide grid
+    const du = gridSlide.x - prevPos.x;
+    const dv = gridSlide.y - prevPos.y;
+
+    window.DLOG?.("[SLIDE] gridSlide", {
+      gridSlide: { x: Number(gridSlide.x.toFixed(3)), y: Number(gridSlide.y.toFixed(3)) },
+      du: Number(du.toFixed(4)),
+      dv: Number(dv.toFixed(4)),
+    });
+
+    // attempt slide move, optionally try axis fallback
+    const slidePos = { x: prevPos.x + du, y: prevPos.y + dv };
+    const footSlide = gridToFootIso(slidePos.x, slidePos.y);
+
+    const blockedSlide = isBlockedByCollision(footSlide, CFG.HIT_RADIUS);
+    window.DLOG?.("[SLIDE] slideCheck", {
+      footSlide: { x: Number(footSlide.x.toFixed(2)), y: Number(footSlide.y.toFixed(2)) },
+      blockedSlide,
+    });
+
+    if (!blockedSlide) return slidePos;
+
+    // fallback: try sliding only on grid X or grid Y separately (helps corners)
+    const tryX = { x: prevPos.x + du, y: prevPos.y };
+    if (!isBlockedByCollision(gridToFootIso(tryX.x, tryX.y), CFG.HIT_RADIUS)) return tryX;
+
+    const tryY = { x: prevPos.x, y: prevPos.y + dv };
+    if (!isBlockedByCollision(gridToFootIso(tryY.x, tryY.y), CFG.HIT_RADIUS)) return tryY;
+
+    return null;
+  }
+
+  /* =========================
+   DEBUG (optional)
+  ========================= */
+  function drawObjectDebug() {
+    L.objectsDebug.removeChildren();
+    const g = new PIXI.Graphics();
+    g.zIndex = 999999;
+    L.objectsDebug.addChild(g);
+
+    const drawIsoPoly = (poly, color) => {
+      g.lineStyle(2, color, 0.9);
+      g.beginFill(color, 0.25);
+      poly.forEach((p, i) => (i === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y)));
+      g.closePath();
+      g.endFill();
+    };
+
+    S.collisionRects.forEach((r) => drawIsoPoly(r.isoPoly, 0xff0000));
+    S.triggerRects.forEach((r) => drawIsoPoly(r.isoPoly, 0x00ff00));
+    S.collisionPolys.forEach((p) => drawIsoPoly(p.isoPoly, 0xaa00ff));
+    S.triggerPolys.forEach((p) => drawIsoPoly(p.isoPoly, 0x0099ff));
+    S.layerPolys.forEach((p) => drawIsoPoly(p.isoPoly, 0xffff00));
+  }
+
+  /* =========================
+   EXPOSE
+  ========================= */
   window.GAME_HELPER = {
-    // popup
-    initPopupHandlers,
-    showPopupProject,
-    closePopup,
+    // init
+    initPopupData,
+    getPopupDataByProjectId,
 
-    // iso/camera
+    // stage/camera
+    updateStageHitArea,
+    centerCameraOnPlayer,
+
+    // iso
     tileSpriteBaseY,
     updateIsoOrigin,
     toIsoTiled,
+    gridToFootIso,
     toGridFromIsoTiled,
     screenDirToGridDir,
-    centerCameraOnPlayer,
-    updateStageHitArea,
 
-    // objects
-    orthoPointsToIsoPoints,
-    rectOrthoPxToIsoPoly,
-    rebuildObjectIsoPolys,
-
-    // collision
-    hitTestShape,
-    isBlockedByCollision,
-
-    // glow
-    drawGlowDiamondAtTile,
-    removeGlowDiamondAtTile,
-
-    // player
-    clampPlayerToMap,
-    updatePlayerPosition,
-    directionFromAngle, // arah rotasi sheet player
-    updatePlayerAnimation,
-    createPlayerFromSheet,
-
-    // TMX
+    // map
     loadTMXAndBuildMap,
 
-    // loop helpers
+    // player
+    createPlayerFromSheet,
+    clampPlayerToMap,
+    updatePlayerPosition,
+    directionFromAngle,
+    updatePlayerAnimation,
+
+    // movement helpers
     computeScreenVectorFromInput,
-    checkAllObjectHits, // collisions
+
+    // vector helpers
+    tryMoveWithSliding,
+
+    // collisions/triggers
+    isBlockedByCollision,
+    checkAllObjectHits,
 
     // debug
-    installInteractionDebugger,
+    drawObjectDebug,
   };
 })();

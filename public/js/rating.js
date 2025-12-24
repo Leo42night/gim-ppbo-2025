@@ -1,6 +1,21 @@
+// rating.js
 (() => {
   const { S } = window.GAME;
+  const { ratingContainer } = window.POPUP.el;
   const { isLoggedIn } = window.AUTH;
+
+  const AVATAR_MAX = 5;
+  const avatarCooldown = new Map(); // url -> timestamp
+  const avatarLoaded = new Set();   // url cache
+
+  function canLoadAvatar(url) {
+    const until = avatarCooldown.get(url);
+    return !until || Date.now() > until;
+  }
+
+  function markAvatarFail(url, ms = 120000) {
+    avatarCooldown.set(url, Date.now() + ms); // 2 menit
+  }
 
   let projects = [
     {
@@ -78,54 +93,125 @@
     };
   }
 
+  function createAvatarImg(url) {
+    const img = document.createElement("img");
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.crossOrigin = "anonymous";
+
+    if (!url || !canLoadAvatar(url)) {
+      img.src = "/img/potrait-placeholder.png";
+      return img;
+    }
+
+    if (avatarLoaded.has(url)) {
+      img.src = url;
+      return img;
+    }
+
+    img.onerror = () => {
+      markAvatarFail(url);
+      img.src = "/img/potrait-placeholder.png";
+    };
+
+    avatarLoaded.add(url);
+    img.src = url;
+    return img;
+  }
+
+  function debounce(fn, ms = 300) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), ms);
+    };
+  }
+
   function stars(avg) {
     const full = Math.floor(avg);
     return "★".repeat(full) + "☆".repeat(5 - full);
   }
 
-  function updateRating() {
+  function _updateRating() {
+    console.log("updateRating", isLoggedIn, projects || []);
+
+    // 🔥 CLEAR SEKALI
+    ratingContainer.innerHTML = "";
+
     if (!isLoggedIn) {
-      S.popupRatingContainerEl.innerHTML = `<p>Silakan berikan rating terlebih dahulu</p>`;
-    } else {
-      projects.forEach(project => {
-        const result = calculateAverage(project.ratings);
-
-        const card = document.createElement("div");
-        card.className = "card";
-
-        card.innerHTML = `
-        <img class="project-img" src="${project.image}">
-        <div class="card-body">
-          <div class="card-title">${project.title}</div>
-    
-          <div class="rating-average">
-            <span class="stars">${stars(result.avg)}</span> (${result.avg})
-          </div>
-    
-          ${Object.entries(project.ratings)
-            .sort((a, b) => b[0] - a[0])
-            .map(([rate, data]) => `
-            <div class="rating-row">
-              <div class="rating-header">
-                <div class="rating-info">
-                  <span>${rate} ★</span>
-                  <span class="rating-count">(${data.count} orang)</span>
-                </div>
-              </div>
-              <div class="avatars">
-                ${data.users.map(u => `<img src="${u}" title="User">`).join("")}
-              </div>
-            </div>
-          `).join("")}
-    
-          <div class="total">Total Penilai: ${result.totalUser}</div>
-        </div>
-      `;
-
-        S.popupRatingContainerEl.appendChild(card);
-      });
+      ratingContainer.innerHTML = `<p style="grid-column: span 5">Silakan berikan rating terlebih dahulu</p>`;
+      return;
     }
+
+    projects.forEach(project => {
+      const result = calculateAverage(project.ratings);
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+      <div class="card-img">
+        <img class="project-img" src="${project.image}" loading="lazy">
+      </div>
+      <div class="card-body">
+        <div class="card-title">${project.title}</div>
+
+        <div class="rating-average">
+          <span class="stars">${stars(result.avg)}</span> (${result.avg})
+        </div>
+      </div>
+    `;
+
+      const body = card.querySelector(".card-body");
+
+      Object.entries(project.ratings)
+        .sort((a, b) => b[0] - a[0])
+        .forEach(([rate, data]) => {
+          const row = document.createElement("div");
+          row.className = "rating-row";
+
+          row.innerHTML = `
+          <div class="rating-header">
+            <div class="rating-info">
+              <span>${rate} ★</span>
+              <span class="rating-count">(${data.count} orang)</span>
+            </div>
+          </div>
+          <div class="avatars"></div>
+        `;
+
+          const avatarsEl = row.querySelector(".avatars");
+
+          // 🔥 LIMIT AVATAR
+          data.users.slice(0, AVATAR_MAX).forEach(u => {
+            avatarsEl.appendChild(createAvatarImg(u));
+          });
+
+          if (data.users.length > AVATAR_MAX) {
+            const more = document.createElement("span");
+            more.className = "more";
+            more.textContent = `+${data.users.length - AVATAR_MAX}`;
+            avatarsEl.appendChild(more);
+          }
+
+          body.appendChild(row);
+        });
+
+      const total = document.createElement("div");
+      total.className = "total";
+      total.textContent = `Total Penilai: ${result.totalUser}`;
+      body.appendChild(total);
+
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.appendChild(card);
+      ratingContainer.appendChild(cell);
+    });
+
+    console.log("[RATING] rendered safely");
   }
+
+  const updateRating = debounce(_updateRating, 300);
 
   window.RATING = {
     fetchRatings,

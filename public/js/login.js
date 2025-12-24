@@ -9,42 +9,40 @@ const userEmailEl = document.getElementById("userEmail");
 const logoutBtn = document.getElementById("logoutBtn");
 
 (() => {
-  // cek login dari localStorage
-  let isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  let me = {};
+  const STORAGE_KEY = "isLoggedIn";
+  let isLoggedIn = localStorage.getItem(STORAGE_KEY) === "true";
+  let me = null;
+
+  // ✅ pastikan BASE_URL ada, pakai origin halaman sekarang
+  const BASE_URL = window.location.origin;
+
+  function setLoggedIn(value) {
+    isLoggedIn = !!value;
+    localStorage.setItem(STORAGE_KEY, isLoggedIn ? "true" : "false");
+    // optional: update UI minimal
+    // console.log("[AUTH] setLoggedIn:", isLoggedIn);
+  }
 
   function openCenteredPopup(url, name = "oauth", w = 520, h = 640) {
     const dualScreenLeft = window.screenLeft ?? window.screenX;
     const dualScreenTop = window.screenTop ?? window.screenY;
-
     const width = window.innerWidth || document.documentElement.clientWidth || screen.width;
     const height = window.innerHeight || document.documentElement.clientHeight || screen.height;
-
     const left = dualScreenLeft + (width - w) / 2;
     const top = dualScreenTop + (height - h) / 2;
 
-    return window.open(
-      url,
-      name,
-      `scrollbars=yes,width=${w},height=${h},top=${top},left=${left}`
-    );
+    return window.open(url, name, `scrollbars=yes,width=${w},height=${h},top=${top},left=${left}`);
   }
 
   async function startGoogleLogin() {
-    // 1) Minta URL OAuth ke backend
-    const res = await fetch(`/auth/popup`, {
-      credentials: "include" // WAJIB agar cookie state terset
-    });
-
+    const res = await fetch(`/auth/popup`, { credentials: "include" });
     if (!res.ok) throw new Error("Failed to get OAuth URL");
 
     const { authUrl } = await res.json();
 
-    // 2) Buka popup
     const popup = openCenteredPopup(authUrl);
     if (!popup) throw new Error("Popup blocked by browser");
 
-    // 3) Tunggu message dari popup callback
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         cleanup();
@@ -59,16 +57,12 @@ const logoutBtn = document.getElementById("logoutBtn");
       }, 400);
 
       function onMessage(event) {
-        // A) Pastikan dari origin backend callback (bukan extension)
+        // ✅ pastikan origin sesuai backend kamu (kalau callback dikirim dari backend origin)
         if (event.origin !== BASE_URL) return;
-
-        // B) Pastikan message datang dari window popup yang kita buka
         if (event.source !== popup) return;
 
-        // C) Pastikan payload format kita
         let data = event.data;
         if (typeof data === "string") {
-          // kalau ada yang ngirim string, coba parse JSON
           try { data = JSON.parse(data); } catch { return; }
         }
         if (!data || data.type !== "oauth_result" || typeof data.ok !== "boolean") return;
@@ -87,27 +81,45 @@ const logoutBtn = document.getElementById("logoutBtn");
     });
   }
 
-  async function getme() {
-    // sukses -> ambil /me
-    const meRes = await fetch(`/api/me`, { credentials: "include" });
-    me = await meRes.json();
-    console.log("[ME]:", me);
+  function applyMeToUI(meObj) {
+    loginIcon.src = meObj.picture || "/img/potrait-placeholder.png";
+    userNameEl.textContent = meObj.name || "-";
+    userEmailEl.textContent = meObj.email || "-";
+  }
 
-    if (!meRes.ok || me.error) {
+  async function getMeAndSyncState() {
+    const meRes = await fetch(`/api/me`, { credentials: "include" });
+    const data = await meRes.json();
+    console.log("[ME]:", data);
+
+    if (!meRes.ok || data?.error) {
+      // kalau backend bilang unauth, reset state
+      me = null;
+      setLoggedIn(false);
       return false;
     }
 
-    loginIcon.src =
-      me.picture || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
-    userNameEl.textContent = me.name;
-    userEmailEl.textContent = me.email;
-    isLoggedIn = true;
-    localStorage.setItem("isLoggedIn", "true");
+    // ✅ sukses
+    me = data;
+    setLoggedIn(true);
+    applyMeToUI(me);
+    return true; // ✅ penting
+  }
+
+  function rateLoginState() {
+    if (isLoggedIn) {
+      loginMessage?.classList.add("hidden");
+      rateForm?.classList.remove("hidden");
+    } else {
+      loginMessage?.classList.remove("hidden");
+      rateForm?.classList.add("hidden");
+    }
   }
 
   async function setuplogin(btn) {
+    // kalau sudah login, cuma toggle menu
     if (isLoggedIn) {
-      userMenu.classList.toggle("show");
+      userMenu?.classList.toggle("show");
       return true;
     }
 
@@ -119,66 +131,73 @@ const logoutBtn = document.getElementById("logoutBtn");
       if (!result.ok) {
         console.error("OAuth failed:", result);
         alert(result.message || ("Login gagal: " + (result.error || "unknown")));
+        setLoggedIn(false);
         return false;
       }
 
-      if (!await getme()) return false;
-      return true;
+      // ✅ setelah popup sukses, VALIDASI ke backend via /api/me
+      const ok = await getMeAndSyncState();
+      if (!ok) {
+        alert("Login gagal: session tidak terbentuk. Coba ulang.");
+        return false;
+      }
 
+      // ✅ setelah /me sukses, state pasti true
+      rateLoginState();
+      return true;
     } catch (e) {
       console.error(e);
       alert(e.message || "Terjadi error saat login");
+      setLoggedIn(false);
       return false;
     } finally {
       btn.disabled = false;
     }
   }
 
-  function rateLoginState() {
-    console.log("rateLoginState", isLoggedIn);
-    if (isLoggedIn) {
-      loginMessage.classList.add("hidden");
-      rateForm.classList.remove("hidden");
-    }
-  }
-
   // klik tombol utama
-  loginBtn.addEventListener("click", async () => {
-    const ok = await setuplogin(loginBtn);
-    if (!ok) return;
-    // FlashCard.show({ mode: "success", message: "Login berhasil!", duration: 2000 });
+  loginBtn?.addEventListener("click", async () => {
+    await setuplogin(loginBtn);
   });
 
-  loginPopupBtn.addEventListener("click", async () => {
+  loginPopupBtn?.addEventListener("click", async () => {
     const ok = await setuplogin(loginPopupBtn);
     if (!ok) return;
     rateLoginState();
   });
 
   // logout
-  logoutBtn.addEventListener("click", () => {
+  logoutBtn?.addEventListener("click", () => {
     fetch("/auth/logout", { credentials: "include" })
       .then(() => {
-        isLoggedIn = false;
-        localStorage.removeItem("isLoggedIn");
-        for(let i = 0; i < 5; i++) localStorage.removeItem(`rating_${i}`);
-        loginIcon.src = "https://developers.google.com/identity/images/g-logo.png";
-        userMenu.classList.remove("show");
+        setLoggedIn(false);
+        me = null;
+        for (let i = 0; i < 5; i++) localStorage.removeItem(`rating_${i}`);
+        loginIcon.src = "/img/g-logo.png";
+        userMenu?.classList.remove("show");
+        rateLoginState();
       })
       .catch(err => console.error(err));
   });
 
   // klik di luar menu -> close
   document.addEventListener("click", (e) => {
-    if (!loginBtn.contains(e.target) && !userMenu.contains(e.target)) {
-      userMenu.classList.remove("show");
+    if (!loginBtn?.contains(e.target) && !userMenu?.contains(e.target)) {
+      userMenu?.classList.remove("show");
     }
   });
 
-  getme(); // cek apa sudah pernah login
-  rateLoginState();
+  // ✅ boot: cek sesi beneran dari backend (lebih valid daripada localStorage)
+  (async () => {
+    await getMeAndSyncState();
+    rateLoginState();
+  })();
 
+  // ✅ expose yang selalu up-to-date
   window.AUTH = {
-    isLoggedIn
-  }
+    get isLoggedIn() { return isLoggedIn; },
+    get me() { return me; },
+    refreshMe: getMeAndSyncState,
+    setLoggedIn, // opsional
+  };
 })();
