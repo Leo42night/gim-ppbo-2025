@@ -175,8 +175,13 @@
     console.log("routeTriggerPopup", props);
     const baseUrl = S.BASE_URL;
 
+    if (props.mode === "image") {
+      showGallery(); // file di public/js/gallery.js
+      return;
+    }
+
     if (props.mode === "present") {
-      window.POPUP.showPresentation("https://www.youtube.com/embed/TuHMaFgQXsQ");
+      window.POPUP.showPresentation();
       return;
     }
     if (props.mode === "info") {
@@ -201,11 +206,11 @@
     // Data by project id "tim"
     const data = window.GAME_HELPER.getPopupDataByProjectId(props.tim);
     console.log("data", data);
-    S.selectedProjectId = data.id; // dipakai rate.js
 
     if (props.mode === "top") window.POPUP.showPopupProject(baseUrl, data || {});
     else if (props.mode === "com") window.POPUP.showPopupCom(data || {});
   }
+  // routeTriggerPopup("");
 
   window.TRIGGER_UI = {
     handleTriggerEnter,

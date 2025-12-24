@@ -10,15 +10,18 @@ function showGallery() {
   closeBtn.classList.add('active');
 
   setTimeout(() => {
+    window.SOUND?.playSound?.("gallery-open");
     cards.forEach(card => {
       card.classList.add('slide-in');
     });
     textArea.classList.add('slide-in');
   }, 100);
 }
+// showGallery();
 
 function focusPhoto(element) {
   const cards = document.querySelectorAll('.photo-card');
+  window.SOUND?.playSound?.("gallery-select");
 
   // Remove active dari semua card
   cards.forEach(card => {
@@ -30,6 +33,7 @@ function focusPhoto(element) {
 }
 
 function closeGallery() {
+  window.SOUND?.playSound?.("gallery-close");
   const bgOverlay = document.getElementById('background-overlay');
   const gallery = document.getElementById('gallery');
   const closeBtn = document.getElementById('closeBtn');

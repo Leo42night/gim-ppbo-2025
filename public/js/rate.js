@@ -6,6 +6,7 @@ const loaderEl = document.getElementById("loadingOverlay");
 
 (() => {
   const { S } = window.GAME;
+  const { isLoggedIn } = window.AUTH;
 
   let selected = 0;
 
@@ -110,6 +111,7 @@ const loaderEl = document.getElementById("loadingOverlay");
 
       if (result.data.success) {
         localStorage.setItem(`rating_${S.selectedProjectId}`, rating);
+        window.AUTH.setLoggedIn(true);
         FlashCard.show({ mode: "success", message: result.data.message, duration: 2000 });
       }
     });

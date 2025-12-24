@@ -5,8 +5,8 @@
   const { app, CFG, mapContainer, L, S } = G;
 
   // init util modules
-  window.SOUND?.initSounds();
-  window.POPUP?.initPopupHandlers();
+  window.SOUND.initSounds();
+  window.POPUP.initPopupHandlers();
 
   // input
   window.addEventListener("keydown", (e) => (S.keys[e.key.toLowerCase()] = true));

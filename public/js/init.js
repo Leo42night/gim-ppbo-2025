@@ -76,7 +76,7 @@ console.log("PIXI.VERSION:", PIXI.VERSION);
 
   const S = {
     BASE_URL,
-    isDebug: true,
+    isDebug: false,
 
     worldReady: false,
     lastUpdate: Date.now(),

@@ -136,7 +136,9 @@ function pickRandomQuestion(excludeIndex = null) {
 async function typewriter(el, text, {
   speed = 18,
   caret = true,
-  onChar = null
+  onChar = null,
+  typingSfx = true,     // ✅ baru
+  typingSound = "typing" // ✅ baru
 } = {}) {
   el.textContent = "";
   let i = 0;
@@ -151,9 +153,22 @@ async function typewriter(el, text, {
     el.textContent = el.textContent.replace(caretChar, "");
   };
 
+  // ✅ start typing sfx (loop)
+  if (typingSfx) window.SOUND?.loopSound?.(typingSound);
+
   return new Promise((resolve) => {
+    const finish = () => {
+      // ✅ stop typing sfx
+      if (typingSfx) window.SOUND?.stopSound?.(typingSound);
+      removeCaret();
+      resolve({
+        cancel() { cancelled = true; },
+        done: true
+      });
+    };
+
     const tick = () => {
-      if (cancelled) return;
+      if (cancelled) return finish();
       if (i < text.length) {
         removeCaret();
         el.textContent += text[i++];
@@ -161,15 +176,34 @@ async function typewriter(el, text, {
         setCaret();
         setTimeout(tick, speed);
       } else {
-        removeCaret();
-        resolve({
-          cancel() { cancelled = true; },
-          done: true
-        });
+        finish();
       }
     };
+
     tick();
   });
+}
+
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function showCalling({ durationMs = 3000, intervalMs = 350 } = {}) {
+  // play codec sekali pas mulai calling
+  window.SOUND?.playSound?.("codec");
+
+  const base = "[CODEC] CALLING";
+  const dots = ["", ".", "..", "..."];
+  const start = Date.now();
+  let i = 0;
+
+  // animasi titik
+  while (Date.now() - start < durationMs) {
+    dialogText.textContent = `${base}${dots[i % dots.length]}`;
+    i++;
+    await sleep(intervalMs);
+  }
 }
 
 /***********************************************************
@@ -206,16 +240,14 @@ async function initPixi() {
   // app.renderer.width: 271
   console.log("app.renderer.width:", app.renderer.width);
   // sprite.anchor.set(0.65); 
-  if(app.renderer.width >= 271 && app.renderer.width < 325){
-    sprite.anchor.set(0.55); 
-  } else if (app.renderer.width >= 325 && app.renderer.width < 362){
+  if (app.renderer.width < 325) {
+    sprite.anchor.set(0.55);
+  } else if (app.renderer.width >= 325 && app.renderer.width < 362) {
     sprite.anchor.set(0.65);
-  } else if (app.renderer.width >= 362 && app.renderer.width < 482){
-    sprite.anchor.set(0.75); 
-  } else if (app.renderer.width >= 482){
-    sprite.anchor.set(1);
+  } else if (app.renderer.width >= 362 && app.renderer.width < 482) {
+    sprite.anchor.set(0.75);
   } else {
-    sprite.anchor.set(0.5);
+    sprite.anchor.set(1);
   }
   sprite.x = app.renderer.width / 2;
   sprite.y = app.renderer.height / 2;
@@ -252,6 +284,8 @@ const dialogText = document.getElementById("dialogText");
 const actionsEl = document.getElementById("actions");
 
 let lastQuestionIndex = null;
+const REQUIRED_CORRECT = 3;
+let correctStreak = 0;
 
 function clearActions() {
   actionsEl.innerHTML = "";
@@ -266,7 +300,7 @@ function addButton(label, { primary = false, onClick } = {}) {
   return btn;
 }
 
-function handleAnswer(picked, chosenIndex){
+function handleAnswer(picked, chosenIndex) {
   if (chosenIndex === picked.correctIndex) {
     onCorrect(picked);
   } else {
@@ -277,6 +311,10 @@ function handleAnswer(picked, chosenIndex){
 async function showInitial() {
   clearActions();
   setFrame(1);
+
+  // ✅ reset progress quiz
+  correctStreak = 0;
+
   dialogText.textContent =
     `[SYSTEM] Tekan "Mulai Dialog" untuk memulai komunikasi...`;
 
@@ -291,15 +329,21 @@ async function showInitial() {
 }
 
 async function startDialog() {
+  stopSpeak();
   clearActions();
   setFrame(2);
 
-  // typewriter intro
-  await typewriter(dialogText,
+  // ✅ tampilkan CALLING... 3 detik (anim titik) + play sound codec
+  await showCalling({ durationMs: 3000, intervalMs: 350 });
+
+  // habis calling -> lanjut intro
+  await typewriter(
+    dialogText,
     `[CODEC] Halo. Kita mulai test singkat.\n` +
     `[CODEC] Aku mau cek pemahamanmu tentang OOP.\n` +
     `[CODEC] Siap?`,
-    { speed: 18 });
+    { speed: 18 }
+  );
 
   // after finished -> frame 3 and go quiz
   // tunggu 1 detik sebelum muncul frame 3
@@ -308,49 +352,147 @@ async function startDialog() {
   await showQuiz();
 }
 
+let currentUtterance = null;
+
+function stopSpeak() {
+  try {
+    speechSynthesis.cancel();
+  } catch { }
+  currentUtterance = null;
+}
+
+function speakID(text) {
+  // Web Speech API butuh gesture user dulu (klik) -> aman karena quiz muncul setelah tombol
+  if (!("speechSynthesis" in window)) return;
+
+  stopSpeak();
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "id-ID";
+  u.rate = 1.0;   // bisa 0.95 kalau mau lebih natural
+  u.pitch = 1.0;
+  u.volume = 1.0;
+
+  // coba pilih voice id-ID kalau tersedia
+  const pickVoice = () => {
+    const voices = speechSynthesis.getVoices?.() || [];
+    const v =
+      voices.find(v => v.lang === "id-ID") ||
+      voices.find(v => v.lang?.toLowerCase().startsWith("id")) ||
+      null;
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  };
+
+  // kadang voices belum siap pertama kali
+  const voicesNow = speechSynthesis.getVoices?.() || [];
+  if (voicesNow.length === 0) {
+    speechSynthesis.onvoiceschanged = () => {
+      speechSynthesis.onvoiceschanged = null;
+      pickVoice();
+    };
+  } else {
+    pickVoice();
+  }
+
+  currentUtterance = u;
+}
+
 async function showQuiz() {
   clearActions();
 
   const picked = pickRandomQuestion(lastQuestionIndex);
   lastQuestionIndex = picked._idx;
 
-  // Dialog quiz (typewriter)
-  await typewriter(dialogText,
-    `[QUIZ] ${picked.q}\n\n` +
-    `Pilih aksi:`,
-    { speed: 16 });
+  // Tampilkan teks quiz (typewriter)
+  await typewriter(
+    dialogText,
+    `[QUIZ] ${picked.q}\n\n` + `Pilih aksi:`,
+    { speed: 16, typingSfx: true }
+  );
 
-  // Render 3 pilihan jawaban (A/B/C)
+  // ✅ Bacakan quiz dalam Bahasa Indonesia
+  // (hilangkan label [QUIZ], bacakan versi natural)
+  const spoken =
+    `Pertanyaan. ${picked.q} ` +
+    `Pilihan jawaban. ` +
+    `Satu. ${picked.choices[0]}. ` +
+    `Dua. ${picked.choices[1]}. ` +
+    `Tiga. ${picked.choices[2]}.`;
+  speakID(spoken);
+
+  // Render 3 pilihan jawaban
   picked.choices.forEach((choiceText, idx) => {
     addButton(`${idx + 1}. ${choiceText}`, {
-      onClick: () => handleAnswer(picked, idx)
+      onClick: () => {
+        // optional: klik sound
+        window.SOUND?.playSound?.("select");
+        stopSpeak(); // stop TTS saat user memilih
+        handleAnswer(picked, idx);
+      }
     });
   });
 
-  // Tombol tambahan: tidak ingin menjawab
   addButton("Tidak ingin menjawab", {
-    onClick: () => onNoAnswer()
+    onClick: () => {
+      window.SOUND?.playSound?.("select");
+      stopSpeak();
+      onNoAnswer();
+    }
   });
 }
 
+
 async function onCorrect(picked) {
+  stopSpeak();
   clearActions();
   setFrame(4);
 
-  await typewriter(dialogText,
+  window.SOUND?.playSound?.("success");
+
+  correctStreak++;
+
+  // Jika belum sampai 3, lanjut quiz lagi
+  if (correctStreak < REQUIRED_CORRECT) {
+    await typewriter(
+      dialogText,
+      `[CODEC] Benar.\n` +
+      `[CODEC] ${picked.explain}\n\n` +
+      `[SYSTEM] Progress: ${correctStreak}/${REQUIRED_CORRECT}\n` +
+      `Lanjut pertanyaan berikutnya...`,
+      { speed: 16 }
+    );
+
+    addButton("Lanjut", {
+      primary: true,
+      onClick: async () => {
+        setFrame(3);
+        await showQuiz();
+      }
+    });
+
+    addButton("Tutup", { onClick: () => hidePopup() });
+    return;
+  }
+
+  // ✅ Kalau sudah 3 benar -> baru dinyatakan berhasil & tampilkan repo
+  await typewriter(
+    dialogText,
     `[CODEC] Benar.\n` +
     `[CODEC] Mantap. ${picked.explain}\n\n` +
+    `[SYSTEM] Kamu lolos (3/3).\n\n` +
     `Selamat! Ini link repo proyek:\n${GITHUB_REPO_URL}`,
-    { speed: 16 });
+    { speed: 16 }
+  );
 
-  // Link button
   addButton("Buka Repo GitHub", {
     primary: true,
     onClick: () => window.open(GITHUB_REPO_URL, "_blank", "noopener,noreferrer")
   });
 
-  addButton("Main Lagi (Quiz Baru)", {
+  addButton("Main Lagi (Reset)", {
     onClick: async () => {
+      correctStreak = 0;
       setFrame(3);
       await showQuiz();
     }
@@ -360,21 +502,30 @@ async function onCorrect(picked) {
 }
 
 async function onWrong(picked) {
+  stopSpeak();
   clearActions();
   setFrame(5);
 
-  await typewriter(dialogText,
+  window.SOUND?.playSound?.("failed");
+
+  // ✅ opsional: kalau salah, reset progress supaya benar-benar “3 pertanyaan sebelum berhasil”
+  correctStreak = 0;
+
+  await typewriter(
+    dialogText,
     `[CODEC] SALAH.\n` +
     `[CODEC] Kamu harus jawab. Jangan kabur.\n\n` +
-    `(Hint) ${picked.explain}\n` +
+    `(Hint) ${picked.explain}\n\n` +
+    `[SYSTEM] Progress di-reset: ${correctStreak}/${REQUIRED_CORRECT}\n` +
     `Klik di bawah untuk coba lagi dengan pertanyaan berbeda.`,
-    { speed: 14 });
+    { speed: 14 }
+  );
 
   addButton("Jawab lagi", {
     primary: true,
     onClick: async () => {
       setFrame(3);
-      await showQuiz(); // pertanyaan random beda (exclude last)
+      await showQuiz();
     }
   });
 
@@ -382,6 +533,7 @@ async function onWrong(picked) {
 }
 
 async function onNoAnswer() {
+  stopSpeak();
   clearActions();
   setFrame(2);
 
@@ -395,7 +547,7 @@ async function onNoAnswer() {
     onClick: () => showInitial()
   });
 
-  addButton("Tutup", { onClick: () => hidePopup() });
+  addButton("Tutup", { onClick: () => hidehidePopup() });
 }
 
 function showPopupOverlay() {
@@ -403,6 +555,7 @@ function showPopupOverlay() {
 }
 
 function hidePopup() {
+  stopSpeak();
   overlay.classList.remove("show");
 }
 
@@ -411,7 +564,6 @@ function hidePopup() {
  ***********************************************************/
 async function initInfo() {
   // showPopupOverlay();
-
   // init pixi once per open (biar simpel & bersih)
   try {
     await initPixi();
@@ -424,7 +576,6 @@ async function initInfo() {
     addButton("Tutup", { onClick: () => hidePopup() });
   }
 }
-
 initInfo();
 
 closeBtn.addEventListener("click", () => hidePopup());

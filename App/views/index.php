@@ -45,7 +45,7 @@
   </div>
 </div>
 
-<!-- Popup Tile Main -->
+<!-- Popup: Tile Main (Top, Com, Day, Rating) -->
 <div id="tilePopup" class="popup hidden">
   <div class="popup-card">
     <button class="popup-close" id="popupCloseBtn">✕</button>
@@ -69,21 +69,28 @@
           <button type="button" class="toggle-btn" data-tab="demo">
             Demo
           </button>
+          <button type="button" class="toggle-btn" data-tab="doc">
+            Document
+          </button>
         </div>
 
-        <div class="video-stage">
-          <div class="video-loading hidden" id="videoLoading">
+        <div class="com-stage-3">
+          <div class="com-loading hidden" id="comLoading">
             <div class="spinner"></div>
             <div class="loading-text">Loading video...</div>
           </div>
 
-          <iframe id="vid-pitch-deck" class="video-frame is-active" title="Presentasi" frameborder="0" loading="lazy"
+          <iframe id="vid-pitch-deck" class="present-com-frame is-active" title="Presentasi" frameborder="0" loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen></iframe>
 
-          <iframe id="vid-demo" class="video-frame" title="Demo" frameborder="0" loading="lazy"
+          <iframe id="vid-demo" class="present-com-frame" title="Demo" frameborder="0" loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen></iframe>
+
+          <iframe id="doc-report" class="present-com-frame" frameborder="0" loading="lazy" title="Doc"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
 
       </div>
@@ -134,9 +141,10 @@
     <!-- Presentation Day -->
     <div id="mode-presentation" class="big hidden">
       <h2 class="popup-header">Hari Presentasi</h2>
-      <iframe id="vid-presentation-day" src="https://www.youtube.com/embed/TuHMaFgQXsQ" title="Hari Presentasi"
-        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen></iframe>
+      <iframe src="https://www.youtube.com/embed/TuHMaFgQXsQ" frameborder="0" id="vid-presentation-day"
+        title="Hari Presentasi"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
     </div>
 
     <!-- Rating -->
@@ -147,7 +155,7 @@
   </div>
 </div>
 
-<!-- Info quiz -->
+<!-- Popup: Quiz info -->
 <div id="overlay" class="overlay">
   <div class="popup-info" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
     <div class="popup-info-header">

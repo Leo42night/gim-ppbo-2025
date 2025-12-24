@@ -95,16 +95,6 @@ body {
   width: min(calc(600px - 2 * 18px), calc(95vw - 2 * 18px));
 }
 
-#mode-rating {
-  overflow: clip;
-  height: 100%;
-}
-
-#mode-presentation.big {
-  width: 70vw;
-  height: auto !important;
-}
-
 .popup-close {
   position: absolute;
   top: 10px;
@@ -171,16 +161,6 @@ body {
   width: fit-content;
 }
 
-/* toggle bar */
-.video-toggle {
-  display: inline-flex;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  width: fit-content;
-}
-
 .toggle-btn {
   appearance: none;
   border: 0;
@@ -188,14 +168,14 @@ body {
   padding: 8px 12px;
   border-radius: 10px;
   background: transparent;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   font-weight: 600;
   transition: transform 120ms ease, background 120ms ease, color 120ms ease;
 }
 
 .toggle-btn:hover {
   transform: translateY(-1px);
-  color: rgba(255,255,255,0.95);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .toggle-btn.is-active {
@@ -204,7 +184,7 @@ body {
 }
 
 /* 1 stage for video */
-.video-stage {
+.com-stage-3 {
   position: relative;
   width: 100%;
   min-height: 360px;
@@ -213,7 +193,7 @@ body {
   background: #0b0f14;
 }
 
-.video-loading {
+.com-loading {
   position: absolute;
   inset: 0;
   z-index: 50;
@@ -226,7 +206,7 @@ body {
   backdrop-filter: blur(2px);
 }
 
-.video-loading.hidden {
+.com-loading.hidden {
   display: none;
 }
 
@@ -234,22 +214,24 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 999px;
-  border: 3px solid rgba(255,255,255,0.2);
-  border-top-color: rgba(0,255,204,0.9);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(0, 255, 204, 0.9);
   animation: spin 0.9s linear infinite;
 }
 
 .loading-text {
   font-size: 14px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* frames stacked, only 1 shown */
-.video-frame {
+.present-com-frame {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -258,7 +240,7 @@ body {
   display: none;
 }
 
-.video-frame.is-active {
+.present-com-frame.is-active {
   display: block;
 }
 
@@ -302,11 +284,27 @@ body {
 }
 
 /* RATING */
+#mode-rating {
+  overflow: clip;
+  height: 100%;
+}
+/* Rating */
+.rating-average,
+.rating-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rating-info span {
+  white-space: nowrap;
+}
+
 #rating-container {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
-  width: min(90vw, 650px);
+  overflow: auto;
 }
 
 .card {
@@ -317,15 +315,19 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   position: relative;
-  padding-bottom: 1.5rem; /* untuk total height */
+  padding-bottom: 3rem; /* untuk total height */
 }
 
 .card-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.5rem;
 }
 
 .card img.project-img {
   width: 100%;
+  max-width: 100px;
   aspect-ratio: 1 /1;
   object-fit: cover;
 }
@@ -389,6 +391,15 @@ body {
   font-size: 13px;
 }
 
+/* PRESENT COM */
+#doc-report {
+  width: calc(100% / 0.85);
+  height: calc(100% / 0.85);
+  transform: scale(0.85);
+  transform-origin: top left;
+  border: 0;
+}
+
 /* !!! RATE */
 .rate-row {
   display: flex;
@@ -440,22 +451,35 @@ body {
   cursor: not-allowed;
 }
 
-@media (max-width: 768px) {
-  #mode-presentation.big {
-    max: 95vw;
-  }
+/* #mode-presentation.big .popup-header{
+  flex: 0 0 auto;
+} */
 
+#mode-presentation.big {
+  width: 70vw;
+}
+/* #mode-presentation.big{
+  width: 92vw;
+  height: 88vh;
+  overflow: hidden;
+} */
+
+#vid-presentation-day {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+/* TABLET */
+@media (max-width: 768px) {
   .card-img {
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .project-img {
-    width: 100px;
+  .com-stage-3 {
+    min-height: 300px;
   }
-
-  .video-stage { min-height: 300px; }
 
   .popup-link {
     display: flex;
@@ -471,34 +495,41 @@ body {
   }
 }
 
+/* MOBILE */
 @media (max-width: 426px) {
+  #info {
+    padding: 3vw;
+  }
+
+  #mode-presentation.big {
+    width: 100%;
+  }
+
   .popup-card {
     width: calc(100vw - 32px);
-    overflow: clip;
+    overflow: auto;
     max-height: 90vh;
   }
 
   #rating-container {
-    display: flex;
     gap: 0.5rem;
-    width: 100%; /* tampil auto scroll */
-    height: 100%; 
-    overflow: auto;
-  }
-
-  .rating-average, .rating-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .rating-info span {
-    white-space: nowrap;
   }
 
   .avatars > img {
     width: 20px;
     height: 20px;
+  }
+
+  #mode-top {
+    width: 100%;
+    max-height: 90vh;
+    overflow: auto;
+  }
+
+  #mode-com {
+    width: 100%;
+    max-height: 90vh;
+    overflow: auto;
   }
 
   .popup-link a {
@@ -508,5 +539,15 @@ body {
   #githubLink img {
     width: 12px;
     height: 12px;
+  }
+
+  /* Present-com */
+  .video-toggle {
+    gap: 2px;
+    padding: 2px;
+    margin-top: 1rem;
+  }
+  .video-toggle button {
+    padding: 8px;
   }
 }

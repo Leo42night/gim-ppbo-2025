@@ -2,3 +2,4 @@ vendor/
 credentials.json
 .env
 dev.html
+db-fill.sql

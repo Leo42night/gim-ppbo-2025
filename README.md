@@ -8,7 +8,7 @@ Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
 
 ## Database
 - users (id, name, email, picture, created_at)
-- pojects (id, title, description, image, link_web, link_vid_pitch, link_vid_demo, link_repo)
+- pojects (id, title, description, image, link_web, link_vid_pitch, link_vid_demo, link_repo, link_doc)
 - teams (project_id, user_id, role)
 - ratings (user_id, project_id, rate, created_at)
 
