@@ -4,6 +4,7 @@
   const STORAGE_TIME_KEY = "GAME_POPUP_DATA_TIME";
   const CACHE_TTL = 1000 * 60 * 60 * 6;
   const { S } = window.GAME;
+  let currentActiveTab = null;
 
   /* =========================
    * Cache helpers
@@ -65,6 +66,7 @@
     // Presentation Day
     presentation: document.getElementById("mode-presentation"),
     vid0: document.getElementById("vid-presentation-day"),
+    loading: document.getElementById("vidLoading"),
 
     // Rating
     rating: document.getElementById("mode-rating"),
@@ -81,21 +83,21 @@
   const btnDemo = toggleWrap?.querySelector('[data-tab="demo"]');
   const btnDoc = toggleWrap?.querySelector('[data-tab="doc"]');
 
-  function showComLoading(show) {
+  function showComLoading(show, from = "") {
     el.comLoading?.classList.toggle("hidden", !show);
   }
 
   function attachVideoLoadListenersOnce() {
     if (el.vid1 && !el.vid1.__hasLoadListener) {
-      el.vid1.addEventListener("load", () => showComLoading(false));
+      el.vid1.addEventListener("load", () => showComLoading(false, "vid1"));
       el.vid1.__hasLoadListener = true;
     }
     if (el.vid2 && !el.vid2.__hasLoadListener) {
-      el.vid2.addEventListener("load", () => showComLoading(false));
+      el.vid2.addEventListener("load", () => showComLoading(false, "vid2"));
       el.vid2.__hasLoadListener = true;
     }
     if (el.docReport && !el.docReport.__hasLoadListener) {
-      el.docReport.addEventListener("load", () => showComLoading(false));
+      el.docReport.addEventListener("load", () => showComLoading(false, "doc"));
       el.docReport.__hasLoadListener = true;
     }
   }
@@ -105,7 +107,9 @@
   function setSrcOnce(iframe, url) {
     if (!iframe) return false;
     const next = (url || "").trim();
+    // console.log("setSrcOnce", iframe.dataset.src, url);
     if (iframe.dataset.src === next) return false;
+    // console.log("setSrcOnce berubah");
     iframe.dataset.src = next;
     iframe.src = next;
     return true;
@@ -113,15 +117,51 @@
 
 
   // Stop video iframe: paling reliable adalah reload iframe ke url yang sama
-  function stopIframe(iframe) {
+  function stopIframe(iframe, from = "") {
     if (!iframe) return;
     const src = iframe.dataset.src || iframe.src;
     if (!src) return;
-    iframe.src = src; // reset to itself -> stop playback
+    // console.log(`stopIframe ${from}: `, src);
+    // 1) blank-kan dulu
+    iframe.src = "about:blank";
+
+    // 2) balikin lagi next tick (biar dianggap reload)
+    setTimeout(() => {
+      iframe.src = src;
+    }, 50);
+  }
+
+  // get rating
+  async function updateMyRateShow() {
+    const projectId = S.selectedProjectId;        // snapshot
+    const key = `rating_${projectId}`;
+
+    if (!projectId || !window.AUTH.me?.id) {
+      return;
+    }
+
+    const cached = localStorage.getItem(key);
+    // console.log(`check localstorage rating_${projectId}: `, cached);
+    if (cached != null) {
+      window.RATE.paint(Number(cached), "active");
+      return;
+    }
+
+    const res = await window.RATE.getRating();
+    // console.log("/api/get-rate:", res);
+    if (!res.ok) return;
+
+    // ⚠️ kalau user sudah pindah project, jangan timpa UI
+    if (S.selectedProjectId !== projectId) return;
+
+    const rate = res.data?.rate ?? null;
+    if (rate != null) localStorage.setItem(key, String(rate));
+    window.RATE.paint(rate, "active");
   }
 
   // tab: "pitch" | "demo" | "doc"
   function setActiveTab(tab) {
+    currentActiveTab = tab;
     // console.log("setActiveTab", tab);
     const pitchActive = tab === "pitch";
     const demoActive = tab === "demo";
@@ -144,15 +184,12 @@
     }
 
     if (pitchActive) {
-      stopIframe(el.vid2);
-      stopIframe(el.docReport);
+      stopIframe(el.vid2, "pitchaActive on, stop vid2");
     } else if (demoActive) {
-      // console.log("open demo");
-      stopIframe(el.vid1);
-      stopIframe(el.docReport);
+      stopIframe(el.vid1, "demoActive on, stop vid1");
     } else if (docActive) {
-      stopIframe(el.vid1);
-      stopIframe(el.vid2);
+      stopIframe(el.vid1, "docActive on, stop vid1");
+      stopIframe(el.vid2, "docActive on, stop vid2");
     }
   }
 
@@ -165,10 +202,7 @@
     // stop semua saat popup disembunyikan
     stopIframe(el.vid1);
     stopIframe(el.vid2);
-    stopIframe(el.docReport);
-
-    // reset tab default
-    setActiveTab("pitch");
+    stopIframe(el.vid0);
 
     // hide container
     el.com?.classList.add("hidden");
@@ -178,13 +212,17 @@
    * Close / handlers
    * ========================= */
   function closePopup() {
+    // console.log("closePopup");
     // hide modes
+    window.GAME_HELPER.resumeGame();
     el.presentation?.classList.add("hidden");
     el.rating?.classList.add("hidden");
     el.top?.classList.add("hidden");
     hidePopupCom();
 
-    if (el.vid0) stopIframe(el.vid0); // presentation day
+    // if(el.vid0) stopIframe(el.vid0); // presentation day
+    // if(el.vid1) stopIframe(el.vid1);
+    // if(el.vid2) stopIframe(el.vid2);
 
     // hide popup
     el.popup?.classList.add("hidden");
@@ -211,44 +249,59 @@
   function showPopupCom(data = {}) {
     S.selectedProjectId = data?.id; // dipakai rate.js
 
+    if (!S.selectedProjectId) {
+      console.warn("showPopupCom: missing project id", data);
+      window.RATE?.paint?.(null, "inactive");
+      return;
+    }
+    // console.log("showPopupCom", data);
+
     // kalau ada perubahan src, tampilkan loading
     const changed1 = setSrcOnce(el.vid1, data?.link_vid_pitch || "");
     const changed2 = setSrcOnce(el.vid2, data?.link_vid_demo || "");
     const changed3 = setSrcOnce(el.docReport, data?.link_doc || "");
 
+    // console.log("showPopupCom change", changed1, changed2, changed3);
+
     // tampilkan loading kalau com aktif sedang ganti src
     // (atau minimal 1 berubah, untuk UX)
-    if (changed1 || changed2 || changed3) showComLoading(true);
+    if (changed1 || changed2 || changed3) showComLoading(true, "change1 2 3");
 
     // fallback: kalau iframe load ga terpanggil (kadang embed), matiin loader paksa
-    const safety = setTimeout(() => showComLoading(false), 7000);
+    const safety = setTimeout(() => showComLoading(false, "safety"), 7000);
     // kalau load kejadian lebih cepat, listener akan hide loader
 
     el.webLink.href = data?.link_web || "#";
     el.repoLink.href = data?.link_repo || "#";
 
     // console.log("showPopupCom", data);
-
-    setActiveTab("pitch");
-    // if (data?.link_vid_pitch && !data?.link_vid_demo && !data?.link_doc) {
-    // } else if (!data?.link_vid_pitch && data?.link_vid_demo && !data?.link_doc) {
-    //   setActiveTab("demo");
-    // } else {
-    //   setActiveTab("doc");
-    // }
-
     el.com?.classList.remove("hidden");
     el.popup?.classList.remove("hidden");
+
+    // cek if open the tab again (tidak perlu run jika project yg sama & tab yg sama)
+    if (data?.id === S.selectedProjectId && data?.tab === currentActiveTab) return;
+    setActiveTab(currentActiveTab || "pitch");
+
+    // update rating
+    updateMyRateShow();
   }
 
 
-  function showOverlayInfo() {
+  function showOverlayQuiz() {
     el.overlay?.classList.add("show");
+    initQuiz();
   }
 
   function showPresentation() {
     el.presentation?.classList.remove("hidden");
     el.popup?.classList.remove("hidden");
+
+    el.loading.classList.toggle("hidden", false);
+    
+    // ketika iframe selesai load
+    el.vid0.addEventListener("load", () => {
+      el.loading.classList.toggle("hidden", true);
+    });
   }
 
   function showRatingPopup() {
@@ -274,7 +327,7 @@
     // show
     showPopupProject,
     showPopupCom,
-    showOverlayInfo,
+    showOverlayQuiz,
     showPresentation,
     showRatingPopup,
     showLoader,
@@ -285,6 +338,7 @@
     getPopupDataById,
 
     // (opsional) expose untuk debugging
+    updateMyRateShow,
     // _video: { setActiveTab, stopIframe, setSrcOnce },
   };
 })();

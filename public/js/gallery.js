@@ -33,6 +33,7 @@ function focusPhoto(element) {
 }
 
 function closeGallery() {
+  window.GAME_HELPER.resumeGame();
   window.SOUND?.playSound?.("gallery-close");
   const bgOverlay = document.getElementById('background-overlay');
   const gallery = document.getElementById('gallery');

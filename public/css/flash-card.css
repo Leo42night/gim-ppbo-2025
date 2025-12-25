@@ -137,3 +137,127 @@
 .flash-card[data-mode="info"] .flash-content {
   color: #3b82f6;
 }
+
+
+@media (max-width: 769px) {
+  .flash-card {
+    top: 4.5rem;
+    right: 16px;
+    width: min(420px, calc(100vw - 32px));
+    border-radius: 16px;
+  }
+
+  .flash-inner {
+    grid-template-columns: 42px 1fr 36px;
+    gap: 12px;
+    padding: 14px 14px 12px 14px;
+  }
+
+  .flash-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    font-size: 18px;
+  }
+
+  .flash-title {
+    font-size: 15px;
+  }
+
+  .flash-message {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .flash-close {
+    width: 32px;
+    height: 32px;
+    font-size: 17px;
+  }
+
+  .flash-progress {
+    height: 4px;
+  }
+}
+
+@media (max-width: 426px) {
+  .flash-card {
+    top: 1rem !important;
+    right: 12px;
+    width: calc(100vw - 24px);
+    border-radius: 14px;
+  }
+
+  .flash-inner {
+    grid-template-columns: 38px 1fr 32px;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .flash-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 16px;
+  }
+
+  .flash-title {
+    font-size: 14px;
+  }
+
+  .flash-message {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .flash-close {
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+  }
+
+  .flash-progress {
+    height: 3px;
+  }
+}
+
+
+@media (max-width: 320px) {
+  .flash-card {
+    right: 8px;
+    width: calc(100vw - 16px);
+    border-radius: 12px;
+  }
+
+  .flash-inner {
+    grid-template-columns: 34px 1fr 28px;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .flash-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .flash-title {
+    font-size: 13px;
+  }
+
+  .flash-message {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .flash-close {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+  }
+
+  .flash-progress {
+    height: 3px;
+  }
+}

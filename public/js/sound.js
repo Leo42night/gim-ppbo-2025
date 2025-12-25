@@ -13,9 +13,9 @@
     if (SOUND.muted) return;
     const audio = SOUND.sounds[name];
     if (!audio) return;
-    const a = audio.cloneNode();
-    a.volume = audio.volume;
-    a.play().catch(() => {});
+
+    audio.currentTime = 0;
+    audio.play().catch(() => { });
   }
 
   function loopSound(name) {
@@ -24,8 +24,15 @@
     if (!audio) return;
     if (audio.paused) {
       audio.currentTime = 0;
-      audio.play().catch(() => {});
+      audio.play().catch(() => { });
     }
+  }
+
+  function stopAllSounds() {
+    Object.values(SOUND.sounds).forEach(a => {
+      a.pause();
+      a.currentTime = 0;
+    });
   }
 
   function stopSound(name) {
@@ -51,12 +58,12 @@
     loadSound("failed", "/sounds/failed.mp3", { volume: 1 });
     loadSound("success", "/sounds/winning.mp3", { volume: 1 });
     loadSound("typing", "/sounds/morse.mp3", { volume: 1 });
-    
+
     // gallery
     loadSound("gallery-open", "/sounds/page-flip_show-image.mp3");
     loadSound("gallery-select", "/sounds/flip-card_select-image.mp3");
     loadSound("gallery-close", "/sounds/page-flip_close-image.mp3");
   }
 
-  window.SOUND = { initSounds, playSound, loopSound, stopSound, setSoundMuted };
+  window.SOUND = { initSounds, playSound, loopSound, stopAllSounds, stopSound, setSoundMuted };
 })();

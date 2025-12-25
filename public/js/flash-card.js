@@ -67,5 +67,5 @@ flashCloseBtn.addEventListener("click", hideFlash);
 window.FlashCard = { show: showFlash, hide: hideFlash };
 
 // Demo (hapus kalau tidak perlu)
-// FlashCard.show({ mode: "info", message: "Login berhasil!", duration: 4000 });
+// FlashCard.show({ mode: "info", message: "Login berhasil!", duration: 80000 });
 // setTimeout(() => FlashCard.show({ mode: "error", message: "Email tidak valid.", duration: 5000 }), 1200);

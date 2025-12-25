@@ -51,14 +51,19 @@ class App
       $url = filter_var($url, FILTER_SANITIZE_URL);
       // ambil nilai di sebelah tanya tanya sebaga parameter
       $param = explode('?', $url)[1] ?? '';
-      // ambil hanya huruf, "/", dan "_"
-      $url = preg_replace('/[^a-zA-Z\/_].*$/', '', $url);
+      // ambil hanya huruf, "/", "_", dan "-"
+      $url = preg_replace('/[^a-zA-Z\/_\-].*$/', '', $url);
+      // pecah class & method
       $url = explode('/', $url);
+      // jika method format "nama-method" ubah jadi "namaMethod"
+      if(isset($url[1]) && strpos($url[1], '-')) {
+        $url[1] = $this->kebabToCamel($url[1]);
+      }
       // ubah "key=value,key2=value2" jadi ["key" => "value", "key2" => "value2"]
       $result = [];
-      if(!empty($param)) {
+      if (!empty($param)) {
         foreach (explode(',', $param) as $pair) {
-          if(strpos($pair, '=') === false) {
+          if (strpos($pair, '=') === false) {
             continue;
           }
           [$key, $value] = explode('=', $pair, 2);
@@ -69,5 +74,10 @@ class App
       $url[3] = $result;
       return $url; // 1=class, 2=method, 3=params
     }
+  }
+
+  private function kebabToCamel(string $str): string
+  {
+    return lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $str))));
   }
 }

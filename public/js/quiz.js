@@ -1,9 +1,9 @@
 /***********************************************************
-    * CONFIG
-    ***********************************************************/
-// Ubah path ini ke file spritesheet kamu (1205x363, 5 frame dalam 1 row)
+* CONFIG
+***********************************************************/
 const BASE_URL = window.location.origin;
 const SHEET_URL = `${BASE_URL}/img/sheet-asdos.png`; // contoh: "./codec_sheet.png"
+// console.log("SHEET_URL:", SHEET_URL);
 
 // Link repo (ubah sesuai repo kamu)
 const GITHUB_REPO_URL = "https://github.com/Leo42night/gim-ppbo-2025";
@@ -13,113 +13,25 @@ const SHEET_LEO_W = 1205;
 const SHEET_LEO_H = 362;
 const FRAME_LEO_W = Math.floor(SHEET_LEO_W / FRAME_LEO_COUNT); // 241
 const FRAME_LEO_H = SHEET_LEO_H;
+let popupAlive = false;
+let isMuted = false;
 
-/***********************************************************
- * QUIZ BANK (10 pertanyaan OOP - random)
- ***********************************************************/
-const QUIZ_BANK = [
-  {
-    q: "OOP: Apa tujuan utama 'encapsulation'?",
-    choices: [
-      "Menyembunyikan detail internal dan membatasi akses langsung ke state object",
-      "Membuat satu class bisa mewarisi banyak class sekaligus",
-      "Mengubah semua method menjadi static agar cepat"
-    ],
-    correctIndex: 0,
-    explain: "Encapsulation menyembunyikan detail internal dan membatasi akses langsung ke state object."
-  },
-  {
-    q: "OOP: Apa yang dimaksud 'inheritance'?",
-    choices: [
-      "Membungkus data agar tidak bisa diakses dari luar",
-      "Class turunan mewarisi properti/method dari class induk",
-      "Menggabungkan beberapa object menjadi satu array"
-    ],
-    correctIndex: 1,
-    explain: "Inheritance memungkinkan class turunan mewarisi properti/method dari class induk."
-  },
-  {
-    q: "OOP: Polymorphism paling sering berarti apa?",
-    choices: [
-      "Satu interface, banyak implementasi",
-      "Satu object hanya boleh punya satu method",
-      "Menghapus constructor agar hemat memori"
-    ],
-    correctIndex: 0,
-    explain: "Polymorphism: satu interface yang sama, perilaku bisa berbeda tergantung implementasi/tipe."
-  },
-  {
-    q: "OOP: Apa fungsi 'abstraction'?",
-    choices: [
-      "Menampilkan detail implementasi serinci mungkin",
-      "Menyederhanakan kompleksitas: tampilkan hal penting, sembunyikan detail",
-      "Mengubah class menjadi JSON otomatis"
-    ],
-    correctIndex: 1,
-    explain: "Abstraction menyederhanakan kompleksitas dengan menampilkan hal penting dan menyembunyikan detail."
-  },
-  {
-    q: "OOP: Constructor biasanya dipakai untuk apa?",
-    choices: [
-      "Menghapus object yang tidak dipakai",
-      "Menginisialisasi object saat dibuat (state awal, validasi awal, dsb.)",
-      "Menjalankan garbage collector secara manual"
-    ],
-    correctIndex: 1,
-    explain: "Constructor dipakai untuk inisialisasi object ketika dibuat."
-  },
-  {
-    q: "OOP: Bedanya class dan object paling tepat?",
-    choices: [
-      "Class = instance, Object = blueprint",
-      "Class = blueprint/definisi; Object = instance dari class",
-      "Class = file; Object = folder"
-    ],
-    correctIndex: 1,
-    explain: "Class adalah blueprint/definisi, object adalah instance nyata."
-  },
-  {
-    q: "OOP: Manfaat utama 'interface' (kontrak) dalam OOP?",
-    choices: [
-      "Membuat semua variabel menjadi public",
-      "Mendefinisikan kontrak method agar implementasi bisa ditukar tanpa ubah pemakai",
-      "Menghindari penggunaan constructor"
-    ],
-    correctIndex: 1,
-    explain: "Interface mendefinisikan kontrak sehingga implementasi bisa diganti tanpa mengubah kode pemakai."
-  },
-  {
-    q: "OOP: Apa itu method overriding?",
-    choices: [
-      "Class turunan mengganti implementasi method dari class induk",
-      "Memanggil method yang sama berkali-kali dalam loop",
-      "Menduplikasi object tanpa constructor"
-    ],
-    correctIndex: 0,
-    explain: "Overriding: subclass mengganti implementasi method superclass."
-  },
-  {
-    q: "OOP: Apa itu composition (has-a) secara umum?",
-    choices: [
-      "Relasi has-a: object dibangun dari object lain",
-      "Relasi is-a: subclass selalu lebih cepat dari superclass",
-      "Relasi one-to-many yang wajib pakai inheritance"
-    ],
-    correctIndex: 0,
-    explain: "Composition adalah relasi has-a: object tersusun dari object lain."
-  },
-  {
-    q: "OOP: Kenapa access modifier (private/protected/public) penting?",
-    choices: [
-      "Untuk kontrol akses, menjaga invariants, dan mengurangi coupling",
-      "Supaya semua method otomatis jadi async",
-      "Agar object bisa disimpan di database tanpa ORM"
-    ],
-    correctIndex: 0,
-    explain: "Access modifier mengontrol akses, menjaga invariants, dan mengurangi coupling."
-  }
-];
+// Token
+let runToken = { id: 0, alive: false };
 
+function newRun() {
+  runToken = { id: runToken.id + 1, alive: true };
+  return runToken;
+}
+
+function cancelRun() {
+  runToken.alive = false;
+}
+
+function assertAlive(token) {
+  return token && token.alive && popupAlive && token.id === runToken.id;
+}
+// end token
 
 function pickRandomQuestion(excludeIndex = null) {
   if (QUIZ_BANK.length === 0) return { q: "(No questions)", explain: "" };
@@ -130,19 +42,22 @@ function pickRandomQuestion(excludeIndex = null) {
   return { ...QUIZ_BANK[idx], _idx: idx };
 }
 
+// SOUND
+
 /***********************************************************
  * TYPEWRITER
  ***********************************************************/
-async function typewriter(el, text, {
-  speed = 18,
-  caret = true,
-  onChar = null,
-  typingSfx = true,     // ✅ baru
-  typingSound = "typing" // ✅ baru
-} = {}) {
+async function typewriter(el, text, opts = {}, token) {
+  const {
+    speed = 18,
+    caret = true,
+    onChar = null,
+    typingSfx = true,
+    typingSound = "typing",
+  } = opts;
+
   el.textContent = "";
   let i = 0;
-  let cancelled = false;
 
   const caretChar = "▌";
   const setCaret = () => {
@@ -153,30 +68,26 @@ async function typewriter(el, text, {
     el.textContent = el.textContent.replace(caretChar, "");
   };
 
-  // ✅ start typing sfx (loop)
   if (typingSfx) window.SOUND?.loopSound?.(typingSound);
 
   return new Promise((resolve) => {
-    const finish = () => {
-      // ✅ stop typing sfx
+    const finish = (reason = "done") => {
       if (typingSfx) window.SOUND?.stopSound?.(typingSound);
       removeCaret();
-      resolve({
-        cancel() { cancelled = true; },
-        done: true
-      });
+      resolve({ done: reason === "done", cancelled: reason !== "done" });
     };
 
     const tick = () => {
-      if (cancelled) return finish();
+      if (!assertAlive(token)) return finish("popup-closed");
+
       if (i < text.length) {
         removeCaret();
         el.textContent += text[i++];
-        if (typeof onChar === "function") onChar(i, text);
+        onChar?.(i, text);
         setCaret();
         setTimeout(tick, speed);
       } else {
-        finish();
+        finish("done");
       }
     };
 
@@ -184,13 +95,26 @@ async function typewriter(el, text, {
   });
 }
 
+function sleep(ms, token) {
+  return new Promise((resolve) => {
+    const t = setTimeout(() => resolve(true), ms);
 
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
+    // kalau token mati sebelum timeout
+    const check = () => {
+      if (!assertAlive(token)) {
+        clearTimeout(t);
+        resolve(false);
+      } else {
+        requestAnimationFrame(check);
+      }
+    };
+    check();
+  });
 }
 
-async function showCalling({ durationMs = 3000, intervalMs = 350 } = {}) {
-  // play codec sekali pas mulai calling
+async function showCalling(token, { durationMs = 3000, intervalMs = 350 } = {}) {
+  if (!assertAlive(token)) return;
+
   window.SOUND?.playSound?.("codec");
 
   const base = "[CODEC] CALLING";
@@ -198,103 +122,97 @@ async function showCalling({ durationMs = 3000, intervalMs = 350 } = {}) {
   const start = Date.now();
   let i = 0;
 
-  // animasi titik
   while (Date.now() - start < durationMs) {
+    if (!assertAlive(token)) return;
     dialogText.textContent = `${base}${dots[i % dots.length]}`;
     i++;
-    await sleep(intervalMs);
+    const ok = await sleep(intervalMs, token);
+    if (!ok) return;
   }
 }
 
 /***********************************************************
  * PIXI: Load sheet + crop 5 textures
  ***********************************************************/
-let app, sprite, frames = [];
+let appQuiz, sprite, frames = [];
 async function initPixi() {
   const wrap = document.getElementById("pixiWrap");
   wrap.innerHTML = "";
+  // console.log("initPixi", wrap);
 
-  app = new PIXI.Application({
+  appQuiz = new PIXI.Application({
     backgroundAlpha: 0,
     antialias: false,
     resolution: window.devicePixelRatio || 1,
     autoDensity: true,
     width: FRAME_LEO_W,
-    height: FRAME_LEO_H
+    height: FRAME_LEO_H,
+    // biar canvas ngikut ukuran wrapper (lebih aman di iOS)
+    resizeTo: wrap,
   });
-  wrap.appendChild(app.view);
+  wrap.appendChild(appQuiz.view);
+
+  // pastikan canvas block & gak ada whitespace baseline
+  appQuiz.view.style.display = "block";
 
   // Load base texture
   const base = await PIXI.Assets.load(SHEET_URL);
 
+  // pastikan ambil BaseTexture-nya
+  const bt = base.baseTexture ?? base;
+
+  // Debug cepat
+  // console.log("baseTex:", base);
+  // console.log("bt:", bt, "valid:", bt.valid, "w/h:", bt.width, bt.height);
+
   // Crop frames: 1 row of 5
   frames = [];
   for (let i = 0; i < FRAME_LEO_COUNT; i++) {
-    const rect = new PIXI.Rectangle(i * FRAME_LEO_W, 0, FRAME_LEO_W, FRAME_LEO_H);
+    const rect = new PIXI.Rectangle(
+      i * FRAME_LEO_W,
+      0,
+      FRAME_LEO_W,
+      FRAME_LEO_H
+    );
     const tex = new PIXI.Texture(base, rect);
     frames.push(tex);
   }
 
   sprite = new PIXI.Sprite(frames[0]);
-  // tampilkan width screen
-  // app.renderer.width: 271
-  // console.log("app.renderer.width:", app.renderer.width);
-  // sprite.anchor.set(0.65); 181
-  // if(app.renderer.width < 121) {
-  //   sprite.anchor.set(0.25); // 25% (app.renderer.width == 90)
-  // } else if(app.renderer.width >= 121 && app.renderer.width < 181) {
-  //   sprite.anchor.set(0.25); // 33%
-  // } else if(app.renderer.width >= 181 && app.renderer.width < 241) {
-  //   sprite.anchor.set(0.4); // 50%
-  // } else if (app.renderer.width >= 241 && app.renderer.width < 271) {
-  //   sprite.anchor.set(0.5); // 67%
-  // } else if (app.renderer.width >= 271 && app.renderer.width < 289) {
-  //   sprite.anchor.set(0.55); // 75%
-  // } else if (app.renderer.width >= 289 && app.renderer.width < 325) {
-  //   sprite.anchor.set(0.6); // 80%
-  // } else if (app.renderer.width >= 325 && app.renderer.width < 362) {
-  //   sprite.anchor.set(0.65); // 90%
-  // } else if (app.renderer.width >= 362 && app.renderer.width < 398) {
-  //   sprite.anchor.set(0.75); // 100%
-  // } else if (app.renderer.width >= 398 && app.renderer.width < 452) {
-  //   sprite.anchor.set(0.8); // 110%
-  // } else if (app.renderer.width >= 452 && app.renderer.width < 482) {
-  //   sprite.anchor.set(0.95); // 125%
-  // } else {
-  //   sprite.anchor.set(1);
-  // }
-
-  const w = app.renderer.width;
-
-  // linear interpolation (LERP)
-  // m = (anchor₂ - anchor₁) / (width₂ - width₁) = 0.00192
-  // 0.25 = (0.00192 × 90) + b => b = 0.077
-  let anchor = 0.00192 * w + 0.077;
-
-  // clamp supaya aman
-  anchor = Math.max(0.25, Math.min(anchor, 1));
-
-  sprite.anchor.set(anchor);
-
-  sprite.x = app.renderer.width / 2;
-  sprite.y = app.renderer.height / 2;
-
-  // slight pixel feel
   sprite.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
 
-  app.stage.addChild(sprite);
+  // anchor aman (sementara)
+  sprite.anchor.set(0.5);
 
-  const scan = new PIXI.Graphics();
-  scan.alpha = 0.12;
+  // posisi selalu pakai appQuiz.screen
+  sprite.x = appQuiz.screen.width / 2;
+  sprite.y = appQuiz.screen.height / 2;
 
-  scan.beginFill(0x39ff67);
-  for (let y = 0; y < FRAME_LEO_H; y += 3) {
-    scan.drawRect(0, y, FRAME_LEO_W, 1);
-  }
-  scan.endFill();
+  // kalau kamu butuh sprite “fit” ke area, scale dengan rasio
+  const scale = Math.min(
+    appQuiz.screen.width / FRAME_LEO_W,
+    appQuiz.screen.height / FRAME_LEO_H
+  );
+  sprite.scale.set(scale);
 
-  app.stage.addChild(scan);
+  appQuiz.stage.addChild(sprite);
+
+  // scanline tetap boleh
+  const scanning = new PIXI.Graphics();
+  scanning.alpha = 0.12;
+  scanning.beginFill(0x39ff67);
+  for (let y = 0; y < FRAME_LEO_H; y += 3)
+    scanning.drawRect(0, y, FRAME_LEO_W, 1);
+  scanning.endFill();
+  appQuiz.stage.addChild(scanning);
+
+  // re-center setelah 1 frame (iOS kadang butuh)
+  requestAnimationFrame(() => {
+    sprite.x = appQuiz.screen.width / 2;
+    sprite.y = appQuiz.screen.height / 2;
+  });
 }
+
 
 function setFrame(n) { // n: 1..5
   const idx = Math.max(1, Math.min(5, n)) - 1;
@@ -306,6 +224,7 @@ function setFrame(n) { // n: 1..5
  ***********************************************************/
 const overlay = document.getElementById("overlay");
 const openBtn = document.getElementById("openPopup");
+const btnMute = document.getElementById("btnMute");
 const closeBtn = document.getElementById("closePopup");
 const dialogText = document.getElementById("dialogText");
 const actionsEl = document.getElementById("actions");
@@ -327,19 +246,18 @@ function addButton(label, { primary = false, onClick } = {}) {
   return btn;
 }
 
-function handleAnswer(picked, chosenIndex) {
-  if (chosenIndex === picked.correctIndex) {
-    onCorrect(picked);
-  } else {
-    onWrong(picked);
-  }
+function handleAnswer(picked, chosenIndex, token) {
+  if (!assertAlive(token)) return;
+  if (chosenIndex === picked.correctIndex) onCorrect(picked, token);
+  else onWrong(picked, token);
 }
 
-async function showInitial() {
+async function showInitial(token) {
+  if (!assertAlive(token)) return;
+
+  stopSpeak();
   clearActions();
   setFrame(1);
-
-  // ✅ reset progress quiz
   correctStreak = 0;
 
   dialogText.textContent =
@@ -347,41 +265,42 @@ async function showInitial() {
 
   addButton("Mulai Dialog", {
     primary: true,
-    onClick: () => startDialog()
+    onClick: () => startDialog(token)
   });
 
-  addButton("Tutup", {
-    onClick: () => hidePopup()
-  });
+  addButton("Tutup", { onClick: () => hidePopup() });
 }
 
-async function startDialog() {
+async function startDialog(token) {
+  if (!assertAlive(token)) return;
+
   stopSpeak();
   clearActions();
   setFrame(2);
 
-  // ✅ tampilkan CALLING... 3 detik (anim titik) + play sound codec
-  await showCalling({ durationMs: 3000, intervalMs: 350 });
+  await showCalling(token, { durationMs: 3000, intervalMs: 350 });
+  if (!assertAlive(token)) return;
 
-  // habis calling -> lanjut intro
-  await typewriter(
-    dialogText,
+  await typewriter(dialogText,
     `[CODEC] Halo. Kita mulai test singkat.\n` +
     `[CODEC] Aku mau cek pemahamanmu tentang OOP.\n` +
     `[CODEC] Siap?`,
-    { speed: 18 }
+    { speed: 18 },
+    token
   );
+  if (!assertAlive(token)) return;
 
-  // after finished -> frame 3 and go quiz
-  // tunggu 1 detik sebelum muncul frame 3
-  await new Promise(resolve => setTimeout(resolve, 1500));
+  await sleep(1500, token);
+  if (!assertAlive(token)) return;
+
   setFrame(3);
-  await showQuiz();
+  await showQuiz(token);
 }
 
 let currentUtterance = null;
 
 function stopSpeak() {
+  // console.log("stopSpeak", speechSynthesis);
   try {
     speechSynthesis.cancel();
   } catch { }
@@ -389,73 +308,51 @@ function stopSpeak() {
 }
 
 function speakID(text) {
-  // Web Speech API butuh gesture user dulu (klik) -> aman karena quiz muncul setelah tombol
-  if (!("speechSynthesis" in window)) return;
+  if (!popupAlive) return;
 
   stopSpeak();
 
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "id-ID";
-  u.rate = 1.0;   // bisa 0.95 kalau mau lebih natural
-  u.pitch = 1.0;
-  u.volume = 1.0;
 
-  // coba pilih voice id-ID kalau tersedia
-  const pickVoice = () => {
-    const voices = speechSynthesis.getVoices?.() || [];
-    const v =
-      voices.find(v => v.lang === "id-ID") ||
-      voices.find(v => v.lang?.toLowerCase().startsWith("id")) ||
-      null;
-    if (v) u.voice = v;
-    speechSynthesis.speak(u);
+  u.onend = () => {
+    if (!popupAlive) speechSynthesis.cancel();
   };
 
-  // kadang voices belum siap pertama kali
-  const voicesNow = speechSynthesis.getVoices?.() || [];
-  if (voicesNow.length === 0) {
-    speechSynthesis.onvoiceschanged = () => {
-      speechSynthesis.onvoiceschanged = null;
-      pickVoice();
-    };
-  } else {
-    pickVoice();
-  }
-
-  currentUtterance = u;
+  speechSynthesis.speak(u);
 }
 
-async function showQuiz() {
+async function showQuiz(token) {
+  if (!assertAlive(token)) return;
   clearActions();
 
   const picked = pickRandomQuestion(lastQuestionIndex);
   lastQuestionIndex = picked._idx;
 
-  // Tampilkan teks quiz (typewriter)
-  await typewriter(
-    dialogText,
-    `[QUIZ] ${picked.q}\n\n` + `Pilih aksi:`,
-    { speed: 16, typingSfx: true }
+  await typewriter(dialogText,
+    `[QUIZ] ${picked.q}\n\nPilih aksi:`,
+    { speed: 16, typingSfx: true },
+    token
   );
+  if (!assertAlive(token)) return;
 
-  // ✅ Bacakan quiz dalam Bahasa Indonesia
-  // (hilangkan label [QUIZ], bacakan versi natural)
-  const spoken =
-    `Pertanyaan. ${picked.q} ` +
-    `Pilihan jawaban. ` +
-    `Satu. ${picked.choices[0]}. ` +
-    `Dua. ${picked.choices[1]}. ` +
-    `Tiga. ${picked.choices[2]}.`;
-  speakID(spoken);
+  if (!isMuted) {
+    const question = picked.q.replace("OOP:", "");
+    const spoken =
+      `Pertanyaan. ${question} ` +
+      `Pilihan jawaban. ` +
+      `Satu. ${picked.choices[0]}. ` +
+      `Dua. ${picked.choices[1]}. ` +
+      `Tiga. ${picked.choices[2]}.`;
+    speakID(spoken);
+  }
 
-  // Render 3 pilihan jawaban
   picked.choices.forEach((choiceText, idx) => {
     addButton(`${idx + 1}. ${choiceText}`, {
       onClick: () => {
-        // optional: klik sound
         window.SOUND?.playSound?.("select");
-        stopSpeak(); // stop TTS saat user memilih
-        handleAnswer(picked, idx);
+        stopSpeak();
+        handleAnswer(picked, idx, token); // <-- pass token juga
       }
     });
   });
@@ -464,22 +361,21 @@ async function showQuiz() {
     onClick: () => {
       window.SOUND?.playSound?.("select");
       stopSpeak();
-      onNoAnswer();
+      onNoAnswer(token);
     }
   });
 }
 
+async function onCorrect(picked, token) {
+  if (!assertAlive(token)) return;
 
-async function onCorrect(picked) {
   stopSpeak();
   clearActions();
   setFrame(4);
-
   window.SOUND?.playSound?.("success");
 
   correctStreak++;
 
-  // Jika belum sampai 3, lanjut quiz lagi
   if (correctStreak < REQUIRED_CORRECT) {
     await typewriter(
       dialogText,
@@ -487,14 +383,17 @@ async function onCorrect(picked) {
       `[CODEC] ${picked.explain}\n\n` +
       `[SYSTEM] Progress: ${correctStreak}/${REQUIRED_CORRECT}\n` +
       `Lanjut pertanyaan berikutnya...`,
-      { speed: 16 }
+      { speed: 16 },
+      token
     );
+    if (!assertAlive(token)) return;
 
     addButton("Lanjut", {
       primary: true,
       onClick: async () => {
+        if (!assertAlive(token)) return;
         setFrame(3);
-        await showQuiz();
+        await showQuiz(token);
       }
     });
 
@@ -502,15 +401,16 @@ async function onCorrect(picked) {
     return;
   }
 
-  // ✅ Kalau sudah 3 benar -> baru dinyatakan berhasil & tampilkan repo
   await typewriter(
     dialogText,
     `[CODEC] Benar.\n` +
     `[CODEC] Mantap. ${picked.explain}\n\n` +
     `[SYSTEM] Kamu lolos (3/3).\n\n` +
     `Selamat! Ini link repo proyek:\n${GITHUB_REPO_URL}`,
-    { speed: 16 }
+    { speed: 16 },
+    token
   );
+  if (!assertAlive(token)) return;
 
   addButton("Buka Repo GitHub", {
     primary: true,
@@ -519,23 +419,24 @@ async function onCorrect(picked) {
 
   addButton("Main Lagi (Reset)", {
     onClick: async () => {
+      if (!assertAlive(token)) return;
       correctStreak = 0;
       setFrame(3);
-      await showQuiz();
+      await showQuiz(token);
     }
   });
 
   addButton("Tutup", { onClick: () => hidePopup() });
 }
 
-async function onWrong(picked) {
+async function onWrong(picked, token) {
+  if (!assertAlive(token)) return;
+
   stopSpeak();
   clearActions();
   setFrame(5);
-
   window.SOUND?.playSound?.("failed");
 
-  // ✅ opsional: kalau salah, reset progress supaya benar-benar “3 pertanyaan sebelum berhasil”
   correctStreak = 0;
 
   await typewriter(
@@ -545,57 +446,97 @@ async function onWrong(picked) {
     `(Hint) ${picked.explain}\n\n` +
     `[SYSTEM] Progress di-reset: ${correctStreak}/${REQUIRED_CORRECT}\n` +
     `Klik di bawah untuk coba lagi dengan pertanyaan berbeda.`,
-    { speed: 14 }
+    { speed: 14 },
+    token
   );
+  if (!assertAlive(token)) return;
 
   addButton("Jawab lagi", {
     primary: true,
     onClick: async () => {
+      if (!assertAlive(token)) return;
       setFrame(3);
-      await showQuiz();
+      await showQuiz(token);
     }
   });
 
   addButton("Tutup", { onClick: () => hidePopup() });
 }
 
-async function onNoAnswer() {
+async function onNoAnswer(token) {
+  if (!assertAlive(token)) return;
+
   stopSpeak();
   clearActions();
   setFrame(2);
 
-  await typewriter(dialogText,
-    `[CODEC] Oke.\n` +
-    `Kalau kapan-kapan siap, kita lanjut lagi.`,
-    { speed: 16 });
+  await typewriter(
+    dialogText,
+    `[CODEC] Oke.\nKalau kapan-kapan siap, kita lanjut lagi.`,
+    { speed: 16 },
+    token
+  );
+  if (!assertAlive(token)) return;
 
   addButton("Kembali ke Awal", {
     primary: true,
-    onClick: () => showInitial()
+    onClick: () => showInitial(token)
   });
 
-  addButton("Tutup", { onClick: () => hidehidePopup() });
+  addButton("Tutup", { onClick: () => hidePopup() });
 }
 
 function showPopupOverlay() {
   overlay.classList.add("show");
+  window.GAME_HELPER.pauseGame();
+}
+
+function stopAllAudio() {
+  window.SOUND?.stopAllSounds?.();
+  window.SOUND?.stopSound?.("typing");
+  window.SOUND?.stopSound?.("codec");
+  stopSpeak();
+}
+
+function toggleMute() {
+  if (isMuted) {
+    btnMute.classList.remove("muted");
+    isMuted = false;
+  } else {
+    stopSpeak();
+    btnMute.classList.add("muted");
+    isMuted = true;
+  }
 }
 
 function hidePopup() {
-  stopSpeak();
+  popupAlive = false;
+  cancelRun();        // matiin semua loop async yang sedang jalan
+  stopAllAudio();     // stop sound + TTS
+  clearActions();
+  dialogText.textContent = "";
+
+  window.GAME_HELPER.resumeGame();
   overlay.classList.remove("show");
 }
 
 /***********************************************************
  * EVENTS
  ***********************************************************/
-async function initInfo() {
-  // showPopupOverlay();
-  // init pixi once per open (biar simpel & bersih)
+async function initQuiz() {
+  popupAlive = true;
+  const token = newRun();   // ✅ token baru tiap open
+
+  await new Promise(r => requestAnimationFrame(r));
+  if (!assertAlive(token)) return;
+
   try {
     await initPixi();
-    await showInitial();
+    if (!assertAlive(token)) return;
+
+    await showInitial(token);
   } catch (err) {
+    if (!assertAlive(token)) return;
     console.error(err);
     dialogText.textContent =
       "Gagal load Pixi/spritesheet. Pastikan SHEET_URL benar dan file tersedia.";
@@ -603,10 +544,14 @@ async function initInfo() {
     addButton("Tutup", { onClick: () => hidePopup() });
   }
 }
-initInfo();
+// initQuiz();
+// showPopupOverlay();
 
+
+btnMute.addEventListener("click", () => toggleMute());
 closeBtn.addEventListener("click", () => hidePopup());
 overlay.addEventListener("click", (e) => {
+  // console.log("outside overlay click");
   if (e.target === overlay) hidePopup();
 });
 

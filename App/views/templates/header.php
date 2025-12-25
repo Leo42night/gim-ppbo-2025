@@ -15,7 +15,7 @@
   <link rel="manifest" href="<?= BASE_URL ?>/favicon/site.webmanifest" />
 
   <link rel="stylesheet" href="<?= BASE_URL ?>/css/style.css" />
-  <link rel="stylesheet" href="<?= BASE_URL ?>/css/info.css" />
+  <link rel="stylesheet" href="<?= BASE_URL ?>/css/quiz.css" />
   <link rel="stylesheet" href="<?= BASE_URL ?>/css/top-right.css" />
   <link rel="stylesheet" href="<?= BASE_URL ?>/css/loading.css" />
   <link rel="stylesheet" href="<?= BASE_URL ?>/css/flash-card.css" />

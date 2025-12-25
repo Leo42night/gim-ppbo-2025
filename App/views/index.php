@@ -80,7 +80,8 @@
             <div class="loading-text">Loading video...</div>
           </div>
 
-          <iframe id="vid-pitch-deck" class="present-com-frame is-active" title="Presentasi" frameborder="0" loading="lazy"
+          <iframe id="vid-pitch-deck" class="present-com-frame is-active" title="Presentasi" frameborder="0"
+            loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen></iframe>
 
@@ -141,10 +142,17 @@
     <!-- Presentation Day -->
     <div id="mode-presentation" class="big hidden">
       <h2 class="popup-header">Hari Presentasi</h2>
-      <iframe src="https://www.youtube.com/embed/TuHMaFgQXsQ" frameborder="0" id="vid-presentation-day"
-        title="Hari Presentasi"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      <div class="iframe-wrap">
+        <div class="iframe-loading" id="vidLoading">
+          Loading video…
+        </div>
+
+        <iframe id="vid-presentation-day" src="https://www.youtube.com/embed/TuHMaFgQXsQ" frameborder="0"
+          title="Hari Presentasi"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+        </iframe>
+      </div>
     </div>
 
     <!-- Rating -->
@@ -163,7 +171,8 @@
         <span class="led"></span>
         CODEC / OOP QUIZ
       </div>
-      <button class="close" id="closePopup">Close</button>
+      <button class="button-quiz" id="btnMute"><img src="/img/speak.png"></button>
+      <button class="button-quiz" id="closePopup">Close</button>
     </div>
 
     <div class="content">

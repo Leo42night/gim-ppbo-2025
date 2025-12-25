@@ -163,6 +163,7 @@ const logoutBtn = document.getElementById("logoutBtn");
   loginPopupBtn?.addEventListener("click", async () => {
     const ok = await setuplogin(loginPopupBtn);
     if (!ok) return;
+    window.POPUP.updateMyRateShow();
     rateLoginState();
   });
 

@@ -4,13 +4,14 @@ const ratingInput = document.getElementById("ratingValue");
 const submitBtn = document.getElementById("submitRating");
 const loaderEl = document.getElementById("loadingOverlay");
 
+// API Helpers
 (() => {
   const { S } = window.GAME;
-  const { isLoggedIn } = window.AUTH;
 
   let selected = 0;
 
   async function postJson(url, payload, { onTrack } = {}) {
+    // console.log("[POST]", url, payload);
     const requestId = crypto?.randomUUID?.() || String(Date.now()) + Math.random().toString(16).slice(2);
 
     try {
@@ -67,6 +68,10 @@ const loaderEl = document.getElementById("loadingOverlay");
     }
   }
 
+  function getRating() {
+    return postJson("/api/get-my-rate", { project_id: S.selectedProjectId, user_id: window.AUTH.me?.id });
+  }
+
   function paint(value, mode) {
     stars.forEach((btn) => {
       const v = Number(btn.dataset.value);
@@ -92,7 +97,7 @@ const loaderEl = document.getElementById("loadingOverlay");
     const rating = Number(ratingInput.value);
     loaderEl.classList.remove("hidden");
 
-    postJson("/api/rate", { rating, project_id: S.selectedProjectId }, {
+    postJson("/api/rate-this", { rating, project_id: S.selectedProjectId }, {
       onTrack: (t) => console.error("[RATE_TRACK]", t)
     }).then((result) => {
       loaderEl.classList.add("hidden");
@@ -111,14 +116,15 @@ const loaderEl = document.getElementById("loadingOverlay");
 
       if (result.data.success) {
         localStorage.setItem(`rating_${S.selectedProjectId}`, rating);
+        // console.log(`check localstorage rating_${S.selectedProjectId}: `, localStorage.getItem(`rating_${S.selectedProjectId}`));
         window.AUTH.setLoggedIn(true);
         FlashCard.show({ mode: "success", message: result.data.message, duration: 2000 });
       }
     });
-
   });
 
   window.RATE = {
-    paint
+    paint,
+    getRating
   }
 })();

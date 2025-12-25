@@ -787,7 +787,7 @@
     if (!blockedFull) return nextPos;
 
     // collision: find best surface to slide on using CURRENT foot point (or predicted point).
-    // ✅ cari surface di titik yang memang blocked (footNext), fallback ke midpoint, lalu prev
+    // cari surface di titik yang memang blocked (footNext), fallback ke midpoint, lalu prev
     const mid = { x: (footPrev.x + footNext.x) / 2, y: (footPrev.y + footNext.y) / 2 };
 
     let surface =
@@ -958,5 +958,9 @@
 
     // debug
     drawObjectDebug,
+
+    // pauseGame
+    pauseGame,
+    resumeGame,  
   };
 })();

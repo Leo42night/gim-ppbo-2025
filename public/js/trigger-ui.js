@@ -2,6 +2,7 @@
 (() => {
   const G = window.GAME;
   const { app, L, S, CFG } = G;
+  const H = window.GAME_HELPER;
 
   function tileSpriteBaseY() {
     return S.TILE_H / 2;
@@ -172,6 +173,9 @@
   }
 
   async function routeTriggerPopup(props) {
+    // Hentikan player movement
+    H.pauseGame(); 
+
     // console.log("routeTriggerPopup", props);
     const baseUrl = S.BASE_URL;
 
@@ -185,7 +189,7 @@
       return;
     }
     if (props.mode === "info") {
-      window.POPUP.showOverlayInfo();
+      window.POPUP.showOverlayQuiz();
       return;
     }
     if (props.mode === "archive") {

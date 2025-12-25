@@ -39,7 +39,7 @@
     marker.endFill();
     L.markers.addChild(marker);
   });
-
+  
   // game loop
   app.ticker.add(() => {
     if (!S.worldReady || !S.player || S.gamePaused) return;
@@ -82,7 +82,7 @@
         distToTarget: distToTarget != null ? Number(distToTarget.toFixed(3)) : null,
       });
 
-      // ✅ gunakan sliding move
+      // gunakan sliding move
       const moved = H.tryMoveWithSliding(S.playerPos, step);
       if (moved) S.playerPos = moved;
     }

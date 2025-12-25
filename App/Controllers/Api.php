@@ -31,7 +31,7 @@ class Api extends Controller
 
   public function me()
   {
-    header("Content-Type: application/json; charset=utf-8");
+    // header("Content-Type: application/json; charset=utf-8");
 
     $u = self::getAuthUser();
 
@@ -49,17 +49,22 @@ class Api extends Controller
     ]);
   }
 
-  public function getrate($req = [])
+  public function getMyRate()
   {
-    $user_id = $req['user_id'] ?? null;
+    $req = json_decode(file_get_contents('php://input'), true);
     $project_id = $req['project_id'] ?? null;
+    $user_id = $req['user_id'] ?? null;
+    if(!$project_id || !$user_id) {
+      echo json_encode(['success' => false, 'message' => 'project_id & user_id is required']);
+      return;
+    }
     $data = $this->model("Rating_model")->getRate($project_id, $user_id);
     echo json_encode($data);
   }
 
-  public function rate()
+  public function rateThis()
   {
-    // if($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    // if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     //   http_response_code(405);
     //   echo json_encode(['error' => 'method_not_allowed', 'message' => 'Method not allowed']);
     //   return;
@@ -68,17 +73,27 @@ class Api extends Controller
     // $req = json_decode(file_get_contents('php://input'), true);
     // $project_id = $req['project_id'] ?? null;
     // $rate = $req['rating'] ?? null;
-    // $user_id = $this->getAuthUser()->sub ?? null;
 
-    // $ok = $this->model("Rating_model")->getRate($project_id, $user_id);
-    // if ($ok) { // update
-    //   $result = $this->model("Rating_model")->update($user_id, $project_id, $rate);
-    //   http_response_code(201);
-    //   echo json_encode(['success' => true, 'message' => 'Rating updated', 'data' => $result]);
-    // } else {
-    //   $data = $this->model("Rating_model")->store($user_id, $project_id, $rate);
-    //   http_response_code(200);
-    //   echo json_encode(['success' => true, 'message' => 'Rating saved', 'data' => $data]);
+    // // if (!$project_id || !is_numeric($project_id)) {
+    // //   echo json_encode(['success' => true, 'message' => 'project_id required and must be numeric']);
+    // //   return;
+    // // }
+    // try {
+    //   $user_id = $this->getAuthUser()->sub ?? null;
+
+    //   $ok = $this->model("Rating_model")->getRate($project_id, $user_id);
+    //   if ($ok) { // update
+    //     $result = $this->model("Rating_model")->update($user_id, $project_id, $rate);
+    //     http_response_code(201);
+    //     echo json_encode(['success' => true, 'message' => 'Rating updated', 'data' => $result]);
+    //   } else {
+    //     $data = $this->model("Rating_model")->store($user_id, $project_id, $rate);
+    //     http_response_code(200);
+    //     echo json_encode(['success' => true, 'message' => 'Rating saved', 'data' => $data]);
+    //   }
+    // } catch (\Exception $e) {
+    //   http_response_code(500);
+    //   echo json_encode(['error' => 'internal_server_error', 'message' => $e->getMessage()]);
     // }
 
     // START: DEBUG MODE
@@ -203,7 +218,6 @@ class Api extends Controller
 
     // END: DEBUG MODE
   }
-
 
   // utilities
   public static function getAuthUser()

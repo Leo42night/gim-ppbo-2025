@@ -2,7 +2,6 @@
 (() => {
   const { S } = window.GAME;
   const { ratingContainer } = window.POPUP.el;
-  const { isLoggedIn } = window.AUTH;
 
   const AVATAR_MAX = 5;
   const avatarCooldown = new Map(); // url -> timestamp
@@ -138,11 +137,11 @@
     // 🔥 CLEAR SEKALI
     ratingContainer.innerHTML = "";
 
-    if (!isLoggedIn) {
+    if (!window.AUTH.isLoggedIn) {
       ratingContainer.innerHTML = `<p style="grid-column: span 5">Silakan berikan rating terlebih dahulu</p>`;
       return;
     }
-
+    // console.log("projects :", projects);
     projects.forEach(project => {
       const result = calculateAverage(project.ratings);
 
