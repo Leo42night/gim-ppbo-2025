@@ -161,7 +161,7 @@
     }
   }
 
-  function handleTriggerExit(props) {
+  function handleTriggerExit() {
     removeGlowTarget();
     removeTriggerButton();
     window.POPUP?.closePopup();

@@ -1,0 +1,5 @@
+v1.3 Performance issue:
+- Load video yt presentation day pertama kali lama & butuh beberapa refresh (~3x) untuk tampil.
+  - Fix idea 1: set src sama seperti video lainnya.
+- Canvas terkadang menghilang (mobile) dan perlu di load ulang.
+  - Fix idea 1: Baca js event lost view canvas & munculkan tombol refresh trigger atau paksa refresh ulang.

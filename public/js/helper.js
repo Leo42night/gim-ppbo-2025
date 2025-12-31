@@ -238,7 +238,7 @@
 
     if (!hit && prev) {
       // EXIT
-      if (key.startsWith("TRIGGER_")) window.TRIGGER_UI?.handleTriggerExit?.(props);
+      if (key.startsWith("TRIGGER_")) window.TRIGGER_UI?.handleTriggerExit?.();
 
       if (key.startsWith("LAYER_")) {
         if (L.entities.zIndex !== 400) L.entities.zIndex = 400;

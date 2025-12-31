@@ -4,7 +4,9 @@
   const STORAGE_TIME_KEY = "GAME_POPUP_DATA_TIME";
   const CACHE_TTL = 1000 * 60 * 60 * 6;
   const { S } = window.GAME;
+  let changedProjectCom = false;
   let currentActiveTab = null;
+  // let alreadyLoadedComVids = [];
 
   /* =========================
    * Cache helpers
@@ -88,6 +90,12 @@
   }
 
   function attachVideoLoadListenersOnce() {
+    // presentation day
+    if (el.vid0 && !el.vid0.__hasLoadListener) {
+      el.vid0.addEventListener("load", () => el.loading.classList.toggle("hidden", true));
+      el.vid0.__hasLoadListener = true;
+    }
+    // Com
     if (el.vid1 && !el.vid1.__hasLoadListener) {
       el.vid1.addEventListener("load", () => showComLoading(false, "vid1"));
       el.vid1.__hasLoadListener = true;
@@ -95,10 +103,6 @@
     if (el.vid2 && !el.vid2.__hasLoadListener) {
       el.vid2.addEventListener("load", () => showComLoading(false, "vid2"));
       el.vid2.__hasLoadListener = true;
-    }
-    if (el.docReport && !el.docReport.__hasLoadListener) {
-      el.docReport.addEventListener("load", () => showComLoading(false, "doc"));
-      el.docReport.__hasLoadListener = true;
     }
   }
   attachVideoLoadListenersOnce();
@@ -175,12 +179,9 @@
     el.vid2?.classList.toggle("is-active", demoActive);
     el.docReport?.classList.toggle("is-active", docActive);
 
-    // show loading saat pindah tab (kalau iframe punya src)
-    const targetIframe = pitchActive ? el.vid1 : demoActive ? el.vid2 : el.docReport;
-    const hasSrc = (targetIframe?.dataset.src || targetIframe?.src || "").trim().length > 0;
-    if (hasSrc && !docActive) {
+    if (!docActive) {
+      // console.log("setActiveTab: changedProjectCom && !docActive");
       showComLoading(true);
-      setTimeout(() => showComLoading(false), 1200); // “perceived loading”
     }
 
     if (pitchActive) {
@@ -202,7 +203,6 @@
     // stop semua saat popup disembunyikan
     stopIframe(el.vid1);
     stopIframe(el.vid2);
-    stopIframe(el.vid0);
 
     // hide container
     el.com?.classList.add("hidden");
@@ -219,10 +219,7 @@
     el.rating?.classList.add("hidden");
     el.top?.classList.add("hidden");
     hidePopupCom();
-
-    // if(el.vid0) stopIframe(el.vid0); // presentation day
-    // if(el.vid1) stopIframe(el.vid1);
-    // if(el.vid2) stopIframe(el.vid2);
+    if(el.vid0) stopIframe(el.vid0); // presentation day
 
     // hide popup
     el.popup?.classList.add("hidden");
@@ -249,6 +246,10 @@
   function showPopupCom(data = {}) {
     S.selectedProjectId = data?.id; // dipakai rate.js
 
+    // console.log("showPopupCom", data);
+    el.com?.classList.remove("hidden");
+    el.popup?.classList.remove("hidden");
+
     if (!S.selectedProjectId) {
       console.warn("showPopupCom: missing project id", data);
       window.RATE?.paint?.(null, "inactive");
@@ -256,34 +257,27 @@
     }
     // console.log("showPopupCom", data);
 
-    // kalau ada perubahan src, tampilkan loading
-    const changed1 = setSrcOnce(el.vid1, data?.link_vid_pitch || "");
-    const changed2 = setSrcOnce(el.vid2, data?.link_vid_demo || "");
-    const changed3 = setSrcOnce(el.docReport, data?.link_doc || "");
+    // gunakan vid1 untuk cek perubahan tab com (src berubah), intial loading
+    changedProjectCom = setSrcOnce(el.vid1, data?.link_vid_pitch || "");
+    setSrcOnce(el.vid2, data?.link_vid_demo || "");
+    setSrcOnce(el.docReport, data?.link_doc || "");
+    // console.log(`showPopupCom ${S.selectedProjectId} changedProjectCom ${changedProjectCom}`);
 
-    // console.log("showPopupCom change", changed1, changed2, changed3);
+    // alreadyLoadedComVids = [];
+    if (changedProjectCom) {
+      el.webLink.href = data?.link_web || "#";
+      el.repoLink.href = data?.link_repo || "#";
+      updateMyRateShow();
 
-    // tampilkan loading kalau com aktif sedang ganti src
-    // (atau minimal 1 berubah, untuk UX)
-    if (changed1 || changed2 || changed3) showComLoading(true, "change1 2 3");
+      if (currentActiveTab !== "doc") showComLoading(true, "change1 2 3");
 
-    // fallback: kalau iframe load ga terpanggil (kadang embed), matiin loader paksa
-    const safety = setTimeout(() => showComLoading(false, "safety"), 7000);
-    // kalau load kejadian lebih cepat, listener akan hide loader
-
-    el.webLink.href = data?.link_web || "#";
-    el.repoLink.href = data?.link_repo || "#";
-
-    // console.log("showPopupCom", data);
-    el.com?.classList.remove("hidden");
-    el.popup?.classList.remove("hidden");
-
-    // cek if open the tab again (tidak perlu run jika project yg sama & tab yg sama)
-    if (data?.id === S.selectedProjectId && data?.tab === currentActiveTab) return;
+      // fallback: kalau iframe load ga terpanggil (kadang embed), matiin loader paksa
+      setTimeout(() => showComLoading(false, "safety"), 7000);
+    } else if (data?.tab === currentActiveTab) {
+      // cek if open the tab again (tidak perlu run jika project yg sama & tab yg sama)
+      return;
+    }
     setActiveTab(currentActiveTab || "pitch");
-
-    // update rating
-    updateMyRateShow();
   }
 
 
@@ -296,12 +290,11 @@
     el.presentation?.classList.remove("hidden");
     el.popup?.classList.remove("hidden");
 
-    el.loading.classList.toggle("hidden", false);
-    
-    // ketika iframe selesai load
-    el.vid0.addEventListener("load", () => {
-      el.loading.classList.toggle("hidden", true);
-    });
+    let changed = setSrcOnce(el.vid0, "https://www.youtube.com/embed/TuHMaFgQXsQ");
+    if (changed) {
+      // console.log("showPresentation change src");
+      el.loading.classList.toggle("hidden", false);
+    }
   }
 
   function showRatingPopup() {

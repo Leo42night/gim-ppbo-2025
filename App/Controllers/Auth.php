@@ -161,40 +161,40 @@ class Auth extends Controller
     ]);
     $userInfo = json_decode(curl_exec($ch), true);
     curl_close($ch);
+    $email = $userInfo['email'];
 
-    if (empty($userInfo['email'])) {
+    if (empty($email)) {
       renderClosePage(false, ['error' => 'failed_get_userinfo']);
     }
 
-    $email = $userInfo['email'];
 
-    // Validasi domain & format: H1101xx10xx@student.untan.ac.id
-    $pattern = '/^H1101\d{2}10\d{2}@student\.untan\.ac\.id$/i';
+    // Validasi domain & format: H1101xx10xx@student.untan.ac.id (!!! ditutup untuk open version)
+    // $pattern = '/^H1101\d{2}10\d{2}@student\.untan\.ac\.id$/i';
 
-    if (!preg_match($pattern, $email)) {
-      setcookie("auth_token", "", [
-        'expires' => time() - 3600,
-        'path' => '/',
-        'httponly' => true,
-        'secure' => HTTPS === 'on',
-        'samesite' => 'Lax'
-      ]);
+    // if (!preg_match($pattern, $email)) {
+    //   setcookie("auth_token", "", [
+    //     'expires' => time() - 3600,
+    //     'path' => '/',
+    //     'httponly' => true,
+    //     'secure' => HTTPS === 'on',
+    //     'samesite' => 'Lax'
+    //   ]);
 
-      // Optional: kalau mau tegas, jangan buat user & jangan set auth_token
-      renderClosePage(false, [
-        'error' => 'email_not_allowed',
-        'message' => 'Email tidak valid. Gunakan email UNTAN: H1101xx10xx@student.untan.ac.id'
-      ]);
-    }
+    //   // Optional: kalau mau tegas, jangan buat user & jangan set auth_token
+    //   renderClosePage(false, [
+    //     'error' => 'email_not_allowed',
+    //     'message' => 'Email tidak valid. Gunakan email UNTAN: H1101xx10xx@student.untan.ac.id'
+    //   ]);
+    // }
 
     // cek user di DB
     $userModel = $this->model('User_model');
-    $existing = $userModel->getByEmail($userInfo['email']);
+    $existing = $userModel->getByEmail($email);
 
     if (!$existing) {
       $userModel->store($userInfo);
       $flashCard = "User baru berhasil terdaftar";
-      $user = $userModel->getByEmail($userInfo['email']);
+      $user = $userModel->getByEmail($email);
     } else {
       $flashCard = "User berhasil login";
       $user = $existing;

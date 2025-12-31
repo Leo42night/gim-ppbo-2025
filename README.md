@@ -5,6 +5,7 @@ Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
 - OAuth Google
 - Voting system by Untan email & Leaderboard
 - Quiz OOP
+- Backend PHP
 
 ## Database
 - users (id, name, email, picture, created_at)
@@ -17,14 +18,14 @@ Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
   - APIs & Services → OAuth consent screen 
   - APIs & Services → Credentials → Create Credentials → OAuth Client ID
   - Client Web App (+Authorize Redirect URI)
-- Setup Server PHP & Database (MySQL)
+- Setup Server PHP & Database (MySQL), using Cloud Run & Cloud SQL
 - JWT Secret (32 - 64 random): 
   - Linux/MacOS: `openssl rand -hex 32`
   - Powersheel: `[guid]::NewGuid()`
   
 ## Deployment Setup
 - Google Cloud Build (auto-trigger from repo Github)
-- Google Cloud Run (domain mapping)
+- Google Cloud Run (domain mapping using Hostinger service)
 - Google Cloud SQL (socket connection)
 
 ## Tools
