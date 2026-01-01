@@ -107,9 +107,7 @@
       <!-- rate -->
       <div style="padding-top: 10px">
         <div id="loginMessage">
-          Silakan <button id="loginPopupBtn">Login</button> untuk memberi rating. Email
-          yang diterima hanya Mahasiswa Sisfo UNTAN
-          (H1101xx10xx@student.untan.ac.id)
+          Silakan <button id="loginPopupBtn">Login</button> untuk memberi rating.
         </div>
         <div class="rate-row hidden" id="rateForm">
           <div class="stars" id="stars" aria-label="Rating" role="radiogroup">

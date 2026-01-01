@@ -15,7 +15,7 @@
 <script src="<?= BASE_URL ?>/js/popup.js"></script>
 <script src="<?= BASE_URL ?>/js/gallery.js"></script>
 
-<!-- Need by Helper, special case -->
+<!-- Needed Helper, special case -->
 <script src="<?= BASE_URL ?>/js/login.js"></script>
 <script src="<?= BASE_URL ?>/js/rating.js"></script>
 <script src="<?= BASE_URL ?>/js/rate.js"></script>

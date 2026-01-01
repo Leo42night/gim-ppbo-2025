@@ -1,9 +1,9 @@
 # PPBO Gim Project
 Gim virtual tour dari Capstone Project kelas Praktikum PBO 2025.
-- Isomorphic 2D JS Engine Game (PixiJs)
+- Isometric 2D JS Engine Game (PixiJs)
 - Showroom project
 - OAuth Google
-- Voting system by Untan email & Leaderboard
+- Voting system by email & Leaderboard
 - Quiz OOP
 - Backend PHP
 
